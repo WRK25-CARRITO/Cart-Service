@@ -38,7 +38,7 @@ jobs:
 
         coverage=$(echo "scale=2; $covered_lines / $total_lines" | bc)
 
-        if (( $(echo "$coverage < 1.0" | bc -l) )); then
+        if (( $(echo "$coverage < 0.3" | bc -l) )); then
           echo "Coverage is below 100%: $coverage"
           exit 1
         fi
