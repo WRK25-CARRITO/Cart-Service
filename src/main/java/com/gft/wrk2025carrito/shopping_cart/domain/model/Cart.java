@@ -2,7 +2,6 @@ package com.gft.wrk2025carrito.shopping_cart.domain.model;
 
 import lombok.*;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
