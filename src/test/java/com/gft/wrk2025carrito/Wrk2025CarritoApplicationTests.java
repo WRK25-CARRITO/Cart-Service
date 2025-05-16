@@ -8,7 +8,10 @@ class Wrk2025CarritoApplicationTests {
 
     @Test
     void contextLoads() {
-        Wrk2025CarritoApplication.main(new String[]{});
     }
 
+    @Test
+    void testMain() {
+        Wrk2025CarritoApplication.main(new String[]{});
+    }
 }
