@@ -106,11 +106,11 @@
                         <goals>
                             <goal>report</goal>
                         </goals>
-                        <configuration>
-                            <excludes>
-                                <exclude>com/gft/wrk2025carrito/Wrk2025CarritoApplication.class</exclude>
-                            </excludes>
-                        </configuration>
+<!--                        <configuration>-->
+<!--                            <excludes>-->
+<!--                                <exclude>com/gft/wrk2025carrito/Wrk2025CarritoApplication.class</exclude>-->
+<!--                            </excludes>-->
+<!--                        </configuration>-->
                     </execution>
                 </executions>
             </plugin>
