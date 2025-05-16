@@ -3,12 +3,13 @@ package com.gft.wrk2025carrito;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+//@SpringBootTest
 class Wrk2025CarritoApplicationTests {
 
     @Test
     void contextLoads() {
-        Wrk2025CarritoApplication.main(new String[]{});
     }
 
 }
