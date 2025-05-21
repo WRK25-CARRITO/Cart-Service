@@ -1,5 +1,7 @@
 package com.gft.wrk2025carrito.shopping_cart.domain.model;
 
+import com.gft.wrk2025carrito.shopping_cart.domain.model.PaymentMethod.PaymentMethod;
+import com.gft.wrk2025carrito.shopping_cart.domain.model.PaymentMethod.PaymentMethodId;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
