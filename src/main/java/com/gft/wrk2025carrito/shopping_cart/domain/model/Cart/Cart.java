@@ -2,7 +2,9 @@ package com.gft.wrk2025carrito.shopping_cart.domain.model.Cart;
 
 import com.gft.wrk2025carrito.shopping_cart.domain.model.CartDetail.CartDetail;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.CartState;
+import com.gft.wrk2025carrito.shopping_cart.domain.model.CountryTax.CountryTax;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.CountryTax.CountryTaxId;
+import com.gft.wrk2025carrito.shopping_cart.domain.model.PaymentMethod.PaymentMethod;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.PaymentMethod.PaymentMethodId;
 import lombok.*;
 
@@ -17,8 +19,8 @@ public class Cart {
 
     private CartId id;
     private UUID userId;
-    private CountryTaxId countryTaxId;
-    private PaymentMethodId paymentMethodId;
+    private CountryTax countryTax;
+    private PaymentMethod paymentMethod;
     private BigDecimal totalPrice;
     private double totalWeight;
     private Date createdAt;
@@ -27,7 +29,7 @@ public class Cart {
     private CartState state;
     private List<UUID> promotionsId;
 
-    public static Cart build(CartId id, UUID userId, CountryTaxId countryTaxId, PaymentMethodId paymentMethodId, BigDecimal totalPrice, double totalWeight, Date createdAt, Date updatedAt, List<CartDetail> cartDetails, CartState state, List<UUID> idPromotions) {
+    public static Cart build(CartId id, UUID userId, CountryTax countryTax, PaymentMethod paymentMethod, BigDecimal totalPrice, double totalWeight, Date createdAt, Date updatedAt, List<CartDetail> cartDetails, CartState state, List<UUID> idPromotions) {
         if (totalPrice.compareTo(BigDecimal.ZERO) < 0) {
             throw new IllegalArgumentException("Price cannot be negative");
         }
@@ -53,12 +55,12 @@ public class Cart {
         }
 
         if (state != CartState.PENDING && state != CartState.CLOSED) {
-            if (countryTaxId != null || paymentMethodId != null) {
-                throw new IllegalArgumentException("Country Tax and Payment method must be null unless state is PENDING or CLOSED");
+            if (countryTax != null || paymentMethod != null) {
+                throw new IllegalArgumentException("Country Tax and Payment method must both be null unless state is PENDING or CLOSED");
             }
         }
 
-        return new Cart(id, userId, countryTaxId, paymentMethodId, totalPrice, totalWeight, createdAt, updatedAt,  cartDetails , state, idPromotions);
+        return new Cart(id, userId, countryTax, paymentMethod, totalPrice, totalWeight, createdAt, updatedAt,  cartDetails , state, idPromotions);
     }
 
 }
