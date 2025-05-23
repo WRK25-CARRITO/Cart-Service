@@ -1,9 +1,12 @@
 package com.gft.wrk2025carrito.shopping_cart.domain.repository;
 
-import com.gft.wrk2025carrito.shopping_cart.domain.model.Cart;
-import com.gft.wrk2025carrito.shopping_cart.domain.model.CartId;
+import java.util.UUID;
 
 public interface CartRepository {
 
-    Cart findById(CartId cartId);
+    void deleteById(UUID id);
+
+    boolean existsById(UUID id);
+
+
 }

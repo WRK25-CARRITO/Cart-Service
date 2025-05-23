@@ -1,4 +1,4 @@
-package com.gft.wrk2025carrito.shopping_cart.domain.model;
+package com.gft.wrk2025carrito.shopping_cart.domain.model.PaymentMethod;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -12,7 +12,7 @@ public class PaymentMethod {
     private String paymentMethod;
     private double charge;
 
-    static PaymentMethod build(PaymentMethodId id, String paymentMethod, double charge) {
+    public static PaymentMethod build(PaymentMethodId id, String paymentMethod, double charge) {
 
         if(paymentMethod == null || paymentMethod.isEmpty()){
             throw new IllegalArgumentException("Payment Method name cannot be null or empty");
