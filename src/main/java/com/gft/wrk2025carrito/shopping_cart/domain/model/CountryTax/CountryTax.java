@@ -1,4 +1,4 @@
-package com.gft.wrk2025carrito.shopping_cart.domain.model;
+package com.gft.wrk2025carrito.shopping_cart.domain.model.CountryTax;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -12,7 +12,7 @@ public class CountryTax {
     private String country;
     private double tax;
 
-    static CountryTax build(CountryTaxId id, String country, double tax) {
+    public static CountryTax build(CountryTaxId id, String country, double tax) {
 
         if(country == null || country.isEmpty()){
             throw new IllegalArgumentException("Country cannot be null or empty");

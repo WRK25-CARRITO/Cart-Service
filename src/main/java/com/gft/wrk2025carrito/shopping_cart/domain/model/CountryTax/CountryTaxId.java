@@ -1,16 +1,17 @@
-package com.gft.wrk2025carrito.shopping_cart.domain.model;
+package com.gft.wrk2025carrito.shopping_cart.domain.model.CountryTax;
 
 import org.springframework.util.Assert;
 
 import java.util.UUID;
 
-public record PaymentMethodId(UUID id) {
+public record CountryTaxId(UUID id) {
 
-    public PaymentMethodId {
+    public CountryTaxId {
         Assert.notNull(id, "id must not be null");
     }
 
-    public PaymentMethodId() {
+    public CountryTaxId() {
         this(UUID.randomUUID());
     }
+
 }
