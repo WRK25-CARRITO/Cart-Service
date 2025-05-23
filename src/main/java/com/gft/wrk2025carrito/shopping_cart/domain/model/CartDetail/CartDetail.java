@@ -5,6 +5,7 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Getter
@@ -12,12 +13,12 @@ import java.util.UUID;
 public class CartDetail {
     private UUID productId;
     private int quantity;
-    private double price;
-    private double weight;
+    private BigDecimal totalPrice;
+    private double totalWeight;
 
-    public static CartDetail build(UUID productId, int quantity, double price, double weight) {
+    public static CartDetail build(UUID productId, int quantity, BigDecimal price, double weight) {
 
-        if (price < 0) {
+        if (price.compareTo(BigDecimal.valueOf(0)) < 0) {
             throw new IllegalArgumentException("Price cannot be negative");
         }
 

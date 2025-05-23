@@ -5,9 +5,12 @@ import com.gft.wrk2025carrito.shopping_cart.domain.model.Cart.CartId;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.CartDetail.CartDetail;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.CountryTax.CountryTaxId;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.PaymentMethod.PaymentMethodId;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -16,21 +19,24 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class CartTest {
 
+    private final Date creationDate = new Date();
+    private final Date updateDate = new Date();
+
+
     @Test
     void create_cart_ok() {
         UUID userId = UUID.randomUUID();
         CartId cartId = new CartId();
-        CountryTaxId countryTaxId = new CountryTaxId();
-        PaymentMethodId paymentMethodId = new PaymentMethodId();
         List<CartDetail> cartDetails = new ArrayList<>();
+        List<UUID> promotionsIds = new ArrayList<>();
 
-        Cart cart = Cart.build(cartId,userId, null, null, 10.0,100.0,cartDetails, CartState.ACTIVE);
+        Cart cart = Cart.build(cartId,userId, null, null, BigDecimal.valueOf(10.0D),100.0, creationDate, updateDate,cartDetails, CartState.ACTIVE, promotionsIds);
 
         assertNotNull(cart.getId());
         assertNotNull(cart.getCartDetails());
         assertEquals(userId, cart.getUserId());
         assertEquals(100.0, cart.getTotalWeight());
-        assertEquals(10.0, cart.getTotalPrice());
+        assertEquals(10.0, cart.getTotalPrice().doubleValue());
     }
 
     @Test
@@ -42,12 +48,11 @@ public class CartTest {
     @Test
     void create_cart_fail_cartId_null() {
         UUID userId = UUID.randomUUID();
-        CountryTaxId countryTaxId = new CountryTaxId();
-        PaymentMethodId paymentMethodId = new PaymentMethodId();
         List<CartDetail> cartDetails = new ArrayList<>();
+        List<UUID> promotionsIds = new ArrayList<>();
 
         assertThrows(IllegalArgumentException.class, () -> {
-            Cart.build(new CartId(null), userId, null, null, 10.0, 5.0, cartDetails,CartState.ACTIVE);
+            Cart.build(new CartId(null), userId, null, null, BigDecimal.valueOf(10.0D),100.0, creationDate, updateDate,cartDetails, CartState.ACTIVE, promotionsIds);
         });
     }
 
@@ -58,9 +63,10 @@ public class CartTest {
         CountryTaxId countryTaxId = new CountryTaxId();
         PaymentMethodId paymentMethodId = new PaymentMethodId();
         List<CartDetail> cartDetails = new ArrayList<>();
+        List<UUID> promotionsIds = new ArrayList<>();
 
         assertThrows(IllegalArgumentException.class, () -> {
-            Cart.build(cartId, userId, null, null, 10.0, -5.0, cartDetails, CartState.PENDING);
+            Cart.build(cartId, userId, null, null, BigDecimal.valueOf(10.0), -5.0, creationDate, updateDate, cartDetails, CartState.PENDING, promotionsIds);
         });
     }
 
@@ -71,10 +77,10 @@ public class CartTest {
         CountryTaxId countryTaxId = new CountryTaxId();
         PaymentMethodId paymentMethodId = new PaymentMethodId();
         List<CartDetail> cartDetails = new ArrayList<>();
-
+        List<UUID> promotionsIds = new ArrayList<>();
 
         assertThrows(IllegalArgumentException.class, () -> {
-            Cart.build(cartId, userId, null, null, -100.0, 5.0, cartDetails, CartState.ACTIVE);
+            Cart.build(cartId, userId, null, null, BigDecimal.valueOf(-100.0), 5.0, creationDate, updateDate, cartDetails, CartState.ACTIVE, promotionsIds);
         });
     }
 
@@ -85,10 +91,11 @@ public class CartTest {
         CountryTaxId countryTaxId = new CountryTaxId();
         PaymentMethodId paymentMethodId = new PaymentMethodId();
         List<CartDetail> cartDetails = null;
+        List<UUID> promotionsId = new ArrayList<>();
 
 
         assertThrows(IllegalArgumentException.class, () -> {
-            Cart.build(cartId, userId, null, null, 100.0, 5.0, cartDetails, CartState.ACTIVE);
+            Cart.build(cartId, userId, null, null, BigDecimal.valueOf(100.0), 5.0, creationDate, updateDate, cartDetails, CartState.ACTIVE, promotionsId);
         });
     }
 
@@ -100,8 +107,9 @@ public class CartTest {
         CountryTaxId countryTaxId = new CountryTaxId();
         PaymentMethodId paymentMethodId = new PaymentMethodId();
         List<CartDetail> cartDetails = new ArrayList<>();
+        List<UUID> promotionsId = new ArrayList<>();
 
-        Cart cart = Cart.build(cartId, userId, countryTaxId, paymentMethodId, 10.0, 5.0, cartDetails, CartState.CLOSED);
+        Cart cart = Cart.build(cartId, userId, countryTaxId, paymentMethodId, BigDecimal.valueOf(10.0), 5.0, creationDate, updateDate, cartDetails, CartState.CLOSED, promotionsId);
 
         assertNotNull(cart);
     }
@@ -113,8 +121,9 @@ public class CartTest {
         CountryTaxId countryTaxId = new CountryTaxId();
         PaymentMethodId paymentMethodId = new PaymentMethodId();
         List<CartDetail> cartDetails = new ArrayList<>();
+        List<UUID> promotionsId = new ArrayList<>();
 
-        Cart cart = Cart.build(cartId, userId, countryTaxId, paymentMethodId, 10.0, 5.0, cartDetails, CartState.PENDING);
+        Cart cart = Cart.build(cartId, userId, countryTaxId, paymentMethodId, BigDecimal.valueOf(10.0), 5.0, creationDate, updateDate, cartDetails, CartState.PENDING, promotionsId);
 
         assertNotNull(cart);
     }
@@ -124,8 +133,9 @@ public class CartTest {
         UUID userId = UUID.randomUUID();
         CartId cartId = new CartId();
         List<CartDetail> cartDetails = new ArrayList<>();
+        List<UUID> promotionsId = new ArrayList<>();
 
-        Cart cart = Cart.build(cartId, userId, null, null, 10.0, 5.0, cartDetails, CartState.PENDING);
+        Cart cart = Cart.build(cartId, userId, null, null, BigDecimal.valueOf(10.0), 5.0, creationDate, updateDate, cartDetails, CartState.PENDING, promotionsId);
 
         assertNotNull(cart);
     }
@@ -137,9 +147,10 @@ public class CartTest {
         CountryTaxId countryTaxId = new CountryTaxId();
         PaymentMethodId paymentMethodId = new PaymentMethodId();
         List<CartDetail> cartDetails = new ArrayList<>();
+        List<UUID> promotionsId = new ArrayList<>();
 
         assertThrows(IllegalArgumentException.class, () -> {
-            Cart.build(cartId, userId, countryTaxId, paymentMethodId, 10.0, 5.0, cartDetails, CartState.ACTIVE);
+            Cart.build(cartId, userId, countryTaxId, paymentMethodId, BigDecimal.valueOf(10.0), 5.0, creationDate, updateDate, cartDetails, CartState.ACTIVE, promotionsId);
         });
     }
 
@@ -150,9 +161,66 @@ public class CartTest {
         CountryTaxId countryTaxId = new CountryTaxId();
         PaymentMethodId paymentMethodId = new PaymentMethodId();
         List<CartDetail> cartDetails = new ArrayList<>();
+        List<UUID> promotionsId = new ArrayList<>();
 
         assertThrows(IllegalArgumentException.class, () -> {
-            Cart.build(cartId, userId, countryTaxId, paymentMethodId, 10.0, 5.0, cartDetails, null);
+            Cart.build(cartId, userId, countryTaxId, paymentMethodId, BigDecimal.valueOf(10.0), 5.0, creationDate, updateDate, cartDetails, null, promotionsId);
+        });
+    }
+
+    @Test
+    void create_cart_when_stateIsClosed_and_UpdatedDateIsNull_shouldFail() {
+        UUID userId = UUID.randomUUID();
+        CartId cartId = new CartId();
+        CountryTaxId countryTaxId = new CountryTaxId();
+        PaymentMethodId paymentMethodId = new PaymentMethodId();
+        List<CartDetail> cartDetails = new ArrayList<>();
+        List<UUID> promotionsId = new ArrayList<>();
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            Cart.build(cartId, userId, countryTaxId, paymentMethodId, BigDecimal.valueOf(10.0), 5.0, creationDate, null, cartDetails, CartState.CLOSED, promotionsId);
+        });
+    }
+
+    @Test
+    void create_cart_when_stateIsClosed_and_UpdatedDateIsNOTNull_shouldOK() {
+        UUID userId = UUID.randomUUID();
+        CartId cartId = new CartId();
+        CountryTaxId countryTaxId = new CountryTaxId();
+        PaymentMethodId paymentMethodId = new PaymentMethodId();
+        List<CartDetail> cartDetails = new ArrayList<>();
+        List<UUID> promotionsId = new ArrayList<>();
+
+        Cart cart = Cart.build(cartId, userId, countryTaxId, paymentMethodId, BigDecimal.valueOf(10.0), 5.0, creationDate, updateDate, cartDetails, CartState.CLOSED, promotionsId);
+        assertNotNull(cart);
+    }
+
+    @Test
+    void create_cart_when_stateIsActive_and_CountryTaxIsNOTNull_or_PaymentMethodIsNOTNull_shouldFail() {
+        UUID userId = UUID.randomUUID();
+        CartId cartId = new CartId();
+        CountryTaxId countryTaxId = new CountryTaxId();
+        PaymentMethodId paymentMethodId = new PaymentMethodId();
+        List<CartDetail> cartDetails = new ArrayList<>();
+        List<UUID> promotionsId = new ArrayList<>();
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            Cart.build(cartId, userId, countryTaxId, paymentMethodId, BigDecimal.valueOf(10.0), 5.0, creationDate, updateDate, cartDetails, CartState.ACTIVE, promotionsId);
+        });
+
+    }
+
+    @Test
+    void create_cart_when_created_Date_is_null_shouldFail() {
+        UUID userId = UUID.randomUUID();
+        CartId cartId = new CartId();
+        CountryTaxId countryTaxId = new CountryTaxId();
+        PaymentMethodId paymentMethodId = new PaymentMethodId();
+        List<CartDetail> cartDetails = new ArrayList<>();
+        List<UUID> promotionsId = new ArrayList<>();
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            Cart.build(cartId, userId, countryTaxId, paymentMethodId, BigDecimal.valueOf(10.0), 5.0, null, updateDate, cartDetails, CartState.ACTIVE, promotionsId);
         });
     }
 

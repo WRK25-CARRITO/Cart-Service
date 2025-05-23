@@ -6,6 +6,7 @@ import com.gft.wrk2025carrito.shopping_cart.domain.model.CountryTax.CountryTaxId
 import com.gft.wrk2025carrito.shopping_cart.domain.model.PaymentMethod.PaymentMethodId;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -18,7 +19,7 @@ public class Cart {
     private UUID userId;
     private CountryTaxId countryTaxId;
     private PaymentMethodId paymentMethodId;
-    private double totalPrice;
+    private BigDecimal totalPrice;
     private double totalWeight;
     private Date createdAt;
     private Date updatedAt;
@@ -26,8 +27,8 @@ public class Cart {
     private CartState state;
     private List<UUID> promotionsId;
 
-    public static Cart build(CartId id, UUID userId, CountryTaxId countryTaxId, PaymentMethodId paymentMethodId, double totalPrice, double totalWeight, Date createdAt, Date updatedAt, List<CartDetail> cartDetails, CartState state, List<UUID> idPromotions) {
-        if (totalPrice < 0) {
+    public static Cart build(CartId id, UUID userId, CountryTaxId countryTaxId, PaymentMethodId paymentMethodId, BigDecimal totalPrice, double totalWeight, Date createdAt, Date updatedAt, List<CartDetail> cartDetails, CartState state, List<UUID> idPromotions) {
+        if (totalPrice.compareTo(BigDecimal.ZERO) < 0) {
             throw new IllegalArgumentException("Price cannot be negative");
         }
 
@@ -41,6 +42,14 @@ public class Cart {
 
         if(state == null) {
             throw new IllegalArgumentException("Cart details cannot be null");
+        }
+
+        if(createdAt == null) {
+            throw new IllegalArgumentException("Created date cannot be null");
+        }
+
+        if(state == CartState.CLOSED && updatedAt == null) {
+            throw new IllegalArgumentException("Update date cannot be null if cart state is CLOSED");
         }
 
         if (state != CartState.PENDING && state != CartState.CLOSED) {

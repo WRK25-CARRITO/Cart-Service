@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/carts")
 public class CartController {
 
-    @GetMapping
+    @PutMapping()
     public ResponseEntity<?> findAll() {
         String s = "hola caracola2";
         return new ResponseEntity<>(s, HttpStatus.OK);

@@ -6,22 +6,26 @@ import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.entity.Ca
 import java.math.BigDecimal;
 
 public class CartDetailMapper {
-    public static CartDetailEntity toEntity(CartDetail cartDomain) {
+
+    public static CartDetailEntity toEntity(CartDetail cartDetailDomain) {
+
         return CartDetailEntity.builder()
-                .productId(cartDomain.getProductId())
-                .quantity(cartDomain.getQuantity())
-                .totalPrice(BigDecimal.valueOf(cartDomain.getPrice()))
-                .totalWeight(cartDomain.getWeight())
+                .productId(cartDetailDomain.getProductId())
+                .quantity(cartDetailDomain.getQuantity())
+                .totalPrice(cartDetailDomain.getTotalPrice())
+                .totalWeight(cartDetailDomain.getTotalWeight())
                 .build();
     }
 
-    public static CartDetail toDomain(CartDetailEntity cartEntity) {
+    public static CartDetail toDomain(CartDetailEntity cartDetailEntity) {
+
         return CartDetail.build(
-                cartEntity.getProductId(),
-                cartEntity.getQuantity(),
-                cartEntity.getTotalPrice().toBigInteger().doubleValue(),
-                cartEntity.getTotalWeight()
+                cartDetailEntity.getProductId(),
+                cartDetailEntity.getQuantity(),
+                cartDetailEntity.getTotalPrice(),
+                cartDetailEntity.getTotalWeight()
         );
 
     }
+
 }
