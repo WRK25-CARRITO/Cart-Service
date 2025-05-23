@@ -1,6 +1,5 @@
 package com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.entity;
 
-
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -14,20 +13,19 @@ import java.util.UUID;
 @Builder( toBuilder = true)
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "CART_DETAILS")
 @Embeddable
 public class CartDetailEntity {
 
-    @Column(name = "PRODUCT_ID", insertable = false, updatable = false)
+    @Column(name = "PRODUCT_ID")
     private UUID productId;
 
-    @Column(name = "QUANTITY", insertable = false, updatable = false)
+    @Column(name = "QUANTITY", nullable = false)
     private Integer quantity;
 
-    @Column(name = "TOTAL_ITEM_PRICE", insertable = false, updatable = false, columnDefinition = "DECIMAL(10,3)")
-    private BigDecimal totalPrice;
-
-    @Column(name = "TOTAL_WEIGHT", insertable = false, updatable = false)
+    @Column(name = "TOTAL_WEIGHT", nullable = false)
     private double totalWeight;
+
+    @Column(name = "TOTAL_ITEM_PRICE")
+    private BigDecimal totalPrice;
 
 }

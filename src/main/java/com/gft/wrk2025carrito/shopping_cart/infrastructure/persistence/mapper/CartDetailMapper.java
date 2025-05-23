@@ -2,12 +2,14 @@ package com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.mapper;
 
 import com.gft.wrk2025carrito.shopping_cart.domain.model.CartDetail.CartDetail;
 import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.entity.CartDetailEntity;
+import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
-
+@Service
 public class CartDetailMapper {
 
     public static CartDetailEntity toEntity(CartDetail cartDetailDomain) {
+
+        if(cartDetailDomain == null) return null;
 
         return CartDetailEntity.builder()
                 .productId(cartDetailDomain.getProductId())
@@ -19,13 +21,14 @@ public class CartDetailMapper {
 
     public static CartDetail toDomain(CartDetailEntity cartDetailEntity) {
 
+        if(cartDetailEntity == null) return null;
+
         return CartDetail.build(
                 cartDetailEntity.getProductId(),
                 cartDetailEntity.getQuantity(),
                 cartDetailEntity.getTotalPrice(),
                 cartDetailEntity.getTotalWeight()
-        );
-
+                );
     }
 
 }

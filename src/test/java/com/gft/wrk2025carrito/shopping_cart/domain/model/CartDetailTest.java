@@ -14,51 +14,66 @@ class CartDetailTest {
     @Test
     void create_CartDetail_ok() {
         UUID productId = UUID.randomUUID();
+        CartId cartId = new CartId();
         int quantity = 3;
-        BigDecimal price = BigDecimal.valueOf(1.5);
+        double price = 1.5;
         double weight = 20.5;
 
-        CartDetail cartDetail = CartDetail.build(productId,quantity, price, weight);
+        CartDetail cartDetail = CartDetail.build(productId,quantity, BigDecimal.valueOf(price), weight);
 
-        assertNotNull(cartDetail);
         assertEquals(3,cartDetail.getQuantity());
         assertEquals(BigDecimal.valueOf(1.5),cartDetail.getTotalPrice());
         assertEquals(20.5,cartDetail.getTotalWeight());
     }
 
     @Test
-    void create_CartDetail_negative_quantity_shouldFail() {
+    void create_CartDetail_negative_quantity() {
         UUID productId = UUID.randomUUID();
+        CartId cartId = new CartId();
         int quantity = -3;
-        BigDecimal price = BigDecimal.valueOf(1.5);
+        double price = 1.5;
         double weight = 20.5;
 
         assertThrows(IllegalArgumentException.class, () -> {
-            CartDetail.build(productId,quantity, price, weight);
+            CartDetail.build(productId,quantity, BigDecimal.valueOf(price), weight);
+        });
+    }
+
+    @Test
+    void create_CartDetail_fail_productId_null() {
+        CartId cartId = new CartId();
+        int quantity = 3;
+        double price = 1.5;
+        double weight = 20.5;
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            CartDetail.build(null,quantity, BigDecimal.valueOf(price), weight);
         });
     }
 
     @Test
     void create_CartDetail_negative_price() {
         UUID productId = UUID.randomUUID();
+        CartId cartId = new CartId();
         int quantity = 3;
-        BigDecimal price = BigDecimal.valueOf(-1.5);
+        double price = -1.5;
         double weight = 20.5;
 
         assertThrows(IllegalArgumentException.class, () -> {
-            CartDetail.build(productId,quantity, price, weight);
+            CartDetail.build(productId,quantity, BigDecimal.valueOf(price), weight);
         });
     }
 
     @Test
     void create_CartDetail_negative_weight() {
         UUID productId = UUID.randomUUID();
+        CartId cartId = new CartId();
         int quantity = 3;
-        BigDecimal price = BigDecimal.valueOf(-1.5);
+        double price = 1.5;
         double weight = -20.5;
 
         assertThrows(IllegalArgumentException.class, () -> {
-            CartDetail.build(productId,quantity, price, weight);
+            CartDetail.build(productId,quantity, BigDecimal.valueOf(price), weight);
         });
     }
 }

@@ -26,5 +26,5 @@ public class CountryTaxEntity {
     private String country;
 
     @Column(name= "TAX")
-    private double tax;
+    private Double tax;
 }

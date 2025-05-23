@@ -3,33 +3,33 @@ package com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.mapper;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.CountryTax.CountryTax;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.CountryTax.CountryTaxId;
 import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.entity.CountryTaxEntity;
+import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
+@Service
 public class CountryTaxMapper {
 
-    public static CountryTaxEntity toEntity(CountryTax countryTaxDomain) {
+    public CountryTaxEntity toEntity(CountryTax countryTax) {
 
-        if (countryTaxDomain == null) {
-            return null;
-        }
+        if (countryTax == null) return null;
 
         return CountryTaxEntity.builder()
-                .id(countryTaxDomain.getId().id())
-                .country(countryTaxDomain.getCountry())
-                .tax(countryTaxDomain.getTax())
+                .id(countryTax.getId().id())
+                .country(countryTax.getCountry())
+                .tax(countryTax.getTax())
                 .build();
     }
 
-    public static CountryTax toDomain(CountryTaxEntity countryTaxEntity) {
+    public CountryTax toDomain(CountryTaxEntity countryTaxEntity) {
 
-        if(countryTaxEntity == null){
-            return null;
-        }
+        if (countryTaxEntity == null) return null;
 
         return CountryTax.build(
-                new CountryTaxId(countryTaxEntity.getId()) ,
+                new CountryTaxId(countryTaxEntity.getId()),
                 countryTaxEntity.getCountry(),
                 countryTaxEntity.getTax()
         );
-    }
 
+    }
 }

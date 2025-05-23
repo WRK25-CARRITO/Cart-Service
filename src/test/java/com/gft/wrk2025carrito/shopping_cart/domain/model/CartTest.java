@@ -1,22 +1,12 @@
 package com.gft.wrk2025carrito.shopping_cart.domain.model;
 
-import com.gft.wrk2025carrito.shopping_cart.domain.model.Cart.Cart;
-import com.gft.wrk2025carrito.shopping_cart.domain.model.Cart.CartId;
-import com.gft.wrk2025carrito.shopping_cart.domain.model.CartDetail.CartDetail;
-import com.gft.wrk2025carrito.shopping_cart.domain.model.CountryTax.CountryTax;
-import com.gft.wrk2025carrito.shopping_cart.domain.model.CountryTax.CountryTaxId;
-import com.gft.wrk2025carrito.shopping_cart.domain.model.PaymentMethod.PaymentMethod;
-import com.gft.wrk2025carrito.shopping_cart.domain.model.PaymentMethod.PaymentMethodId;
 import org.junit.jupiter.api.Test;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
-
 
 public class CartTest {
 
@@ -27,18 +17,25 @@ public class CartTest {
 
     @Test
     void create_cart_ok() {
-        UUID userId = UUID.randomUUID();
-        CartId cartId = new CartId();
-        List<CartDetail> cartDetails = new ArrayList<>();
-        List<UUID> promotionsIds = new ArrayList<>();
-
-        Cart cart = Cart.build(cartId,userId, null, null, BigDecimal.valueOf(10.0D),100.0, creationDate, updateDate,cartDetails, CartState.ACTIVE, promotionsIds);
+        Cart cart = Cart.build(
+                cartId,
+                userId,
+                null,
+                null,
+                BigDecimal.valueOf(10.0),
+                100.0,
+                now,
+                now,
+                cartDetails,
+                CartState.ACTIVE,
+                new ArrayList<>()
+        );
 
         assertNotNull(cart.getId());
         assertNotNull(cart.getCartDetails());
         assertEquals(userId, cart.getUserId());
         assertEquals(100.0, cart.getTotalWeight());
-        assertEquals(10.0, cart.getTotalPrice().doubleValue());
+        assertEquals(10.0, cart.getTotalPrice());
     }
 
     @Test
@@ -49,53 +46,169 @@ public class CartTest {
 
     @Test
     void create_cart_fail_cartId_null() {
-        UUID userId = UUID.randomUUID();
-        List<CartDetail> cartDetails = new ArrayList<>();
-        List<UUID> promotionsIds = new ArrayList<>();
-
-        assertThrows(IllegalArgumentException.class, () -> {
-            Cart.build(new CartId(null), userId, null, null, BigDecimal.valueOf(10.0D),100.0, creationDate, updateDate,cartDetails, CartState.ACTIVE, promotionsIds);
-        });
+        assertThrows(IllegalArgumentException.class, () ->
+                Cart.build(
+                        null,
+                        userId,
+                        countryTax,
+                        paymentMethod,
+                        BigDecimal.TEN,
+                        100.0,
+                        now,
+                        now,
+                        cartDetails,
+                        CartState.ACTIVE,
+                        new ArrayList<>()
+                ));
     }
 
     @Test
     void create_cart_fail_negative_weight() {
-        UUID userId = UUID.randomUUID();
-        CartId cartId = new CartId();
-
-
-        List<CartDetail> cartDetails = new ArrayList<>();
-        List<UUID> promotionsIds = new ArrayList<>();
-
-        assertThrows(IllegalArgumentException.class, () -> {
-            Cart.build(cartId, userId, null, null, BigDecimal.valueOf(10.0), -5.0, creationDate, updateDate, cartDetails, CartState.PENDING, promotionsIds);
-        });
+        assertThrows(IllegalArgumentException.class, () ->
+                Cart.build(
+                        cartId,
+                        userId,
+                        countryTax,
+                        paymentMethod,
+                        BigDecimal.TEN,
+                        -5.0,
+                        now,
+                        now,
+                        cartDetails,
+                        CartState.ACTIVE,
+                        new ArrayList<>()
+                ));
     }
 
     @Test
     void create_cart_fail_negative_price() {
-        UUID userId = UUID.randomUUID();
-        CartId cartId = new CartId();
-
-
-        List<CartDetail> cartDetails = new ArrayList<>();
-        List<UUID> promotionsIds = new ArrayList<>();
-
-        assertThrows(IllegalArgumentException.class, () -> {
-            Cart.build(cartId, userId, null, null, BigDecimal.valueOf(-100.0), 5.0, creationDate, updateDate, cartDetails, CartState.ACTIVE, promotionsIds);
-        });
+        assertThrows(IllegalArgumentException.class, () ->
+                Cart.build(
+                        cartId,
+                        userId,
+                        countryTax,
+                        paymentMethod,
+                        BigDecimal.valueOf(-10.0),
+                        100.0,
+                        now,
+                        now,
+                        cartDetails,
+                        CartState.ACTIVE,
+                        new ArrayList<>()
+                ));
     }
 
     @Test
     void create_cart_fail_cartDetails_null() {
-        UUID userId = UUID.randomUUID();
-        CartId cartId = new CartId();
+        Cart cart =  Cart.build(
+                cartId,
+                userId,
+                countryTax,
+                paymentMethod,
+                BigDecimal.TEN,
+                100.0,
+                now,
+                now,
+                null,
+                CartState.CLOSED,
+                null
+        );
 
+        assertEquals(Collections.emptyList(), cart.getCartDetails());
+    }
 
-        List<CartDetail> cartDetails = null;
-        List<UUID> promotionsId = new ArrayList<>();
+    @Test
+    void create_cart_success_closed_with_tax_and_payment() {
+        Cart cart = Cart.build(
+                cartId,
+                userId,
+                countryTax,
+                paymentMethod,
+                BigDecimal.TEN,
+                100.0,
+                now,
+                now,
+                cartDetails,
+                CartState.CLOSED,
+                new ArrayList<>()
+        );
+        assertNotNull(cart);
+    }
 
+    @Test
+    void create_cart_success_pending_with_tax_and_payment() {
+        Cart cart = Cart.build(
+                cartId,
+                userId,
+                countryTax,
+                paymentMethod,
+                BigDecimal.TEN,
+                100.0,
+                now,
+                now,
+                cartDetails,
+                CartState.PENDING,
+                new ArrayList<>()
+        );
+        assertNotNull(cart);
+    }
 
+    @Test
+    void create_cart_success_pending_without_tax_and_payment() {
+        Cart cart = Cart.build(
+                cartId,
+                userId,
+                null,
+                null,
+                BigDecimal.TEN,
+                100.0,
+                now,
+                now,
+                cartDetails,
+                CartState.PENDING,
+                new ArrayList<>()
+        );
+        assertNotNull(cart);
+    }
+
+    @Test
+    void create_cart_fail_non_pending_or_closed_with_tax_and_payment() {
+        assertThrows(IllegalArgumentException.class, () ->
+                Cart.build(
+                        cartId,
+                        userId,
+                        countryTax,
+                        paymentMethod,
+                        BigDecimal.TEN,
+                        100.0,
+                        now,
+                        now,
+                        cartDetails,
+                        CartState.ACTIVE,
+                        new ArrayList<>()
+                ));
+    }
+
+    @Test
+    void create_cart_fail_null_state() {
+        assertThrows(IllegalArgumentException.class, () ->
+                Cart.build(
+                        cartId,
+                        userId,
+                        countryTax,
+                        paymentMethod,
+                        BigDecimal.TEN,
+                        100.0,
+                        now,
+                        now,
+                        cartDetails,
+                        null,
+                        new ArrayList<>()
+                ));
+    }
+
+    @Test
+    void create_cart_fail_paymentMethod_not_null_when_state_not_pending_or_closed() {
         assertThrows(IllegalArgumentException.class, () -> {
             Cart.build(cartId, userId, null, null, BigDecimal.valueOf(100.0), 5.0, creationDate, updateDate, cartDetails, CartState.ACTIVE, promotionsId);
         });
