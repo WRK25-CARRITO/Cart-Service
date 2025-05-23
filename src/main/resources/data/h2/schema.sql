@@ -5,7 +5,7 @@ DROP TABLE IF EXISTS COUNTRY_TAXES;
 DROP TABLE IF EXISTS PAYMENT_METHODS;
 
 CREATE TABLE IF NOT EXISTS PAYMENT_METHODS (
-    ID                  BINARY(16),
+    ID                  UUID                    ,
     NAME                VARCHAR(100)    NOT NULL,
     CHARGE              DOUBLE          NOT NULL,
 
@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS PAYMENT_METHODS (
 );
 
 CREATE TABLE IF NOT EXISTS COUNTRY_TAXES (
-    ID                  BINARY(16),
+    ID                  UUID                    ,
     COUNTRY             VARCHAR(100)    NOT NULL,
     TAX                 DOUBLE          NOT NULL,
 
@@ -21,12 +21,12 @@ CREATE TABLE IF NOT EXISTS COUNTRY_TAXES (
 );
 
 CREATE TABLE IF NOT EXISTS CARTS (
-    ID                  BINARY(16),
-    ID_USER             BINARY(16)      NOT NULL,
-    TOTAL_PRICE         DECIMAL(10,3)   NOT NULL,
-    TOTAL_WEIGHT        DOUBLE          NOT NULL,
-    COUNTRY_TAX_ID      BINARY(16),
-    PAYMENT_METHOD_ID   BINARY(16),
+    ID                  UUID                     ,
+    ID_USER             UUID             NOT NULL,
+    TOTAL_PRICE         DECIMAL(10,3)    NOT NULL,
+    TOTAL_WEIGHT        DOUBLE           NOT NULL,
+    COUNTRY_TAX_ID      UUID,
+    PAYMENT_METHOD_ID   UUID,
     CREATED_AT          TIMESTAMP,
     UPDATED_AT          TIMESTAMP,
     STATE               VARCHAR(30)     NOT NULL,
@@ -37,8 +37,8 @@ CREATE TABLE IF NOT EXISTS CARTS (
 );
 
 CREATE TABLE IF NOT EXISTS CART_DETAILS (
-    CART_ID             BINARY(16)          NOT NULL,
-    PRODUCT_ID          BINARY(16)          NOT NULL,
+    CART_ID             UUID                NOT NULL,
+    PRODUCT_ID          UUID                NOT NULL,
     QUANTITY            INTEGER             NOT NULL,
     TOTAL_WEIGHT        DOUBLE              NOT NULL,
     TOTAL_ITEM_PRICE    DECIMAL(10,3)       NOT NULL,
@@ -47,8 +47,8 @@ CREATE TABLE IF NOT EXISTS CART_DETAILS (
 );
 
 CREATE TABLE IF NOT EXISTS PROMOTIONS_CARTS(
-    ID_PROMOTION        BINARY(16),
-    CART_ID             BINARY(16)            NOT NULL,
+    ID_PROMOTION        UUID,
+    CART_ID             UUID            NOT NULL,
 
     PRIMARY KEY (ID_PROMOTION, CART_ID),
     FOREIGN KEY (CART_ID) REFERENCES CARTS(ID) ON DELETE RESTRICT ON UPDATE CASCADE

@@ -13,11 +13,10 @@ import java.util.UUID;
 @Builder( toBuilder = true)
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "CART_DETAILS")
 @Embeddable
 public class CartDetailEntity {
 
-    @Column(name = "PRODUCT_ID", nullable = false,columnDefinition = "CHAR(36)")
+    @Column(name = "PRODUCT_ID")
     private UUID productId;
 
     @Column(name = "QUANTITY", nullable = false)
@@ -26,7 +25,7 @@ public class CartDetailEntity {
     @Column(name = "TOTAL_WEIGHT", nullable = false)
     private double totalWeight;
 
-    @Column(name = "TOTAL_ITEM_PRICE", nullable = false, columnDefinition = "DECIMAL(10,3)")
+    @Column(name = "TOTAL_ITEM_PRICE")
     private BigDecimal totalPrice;
 
 }

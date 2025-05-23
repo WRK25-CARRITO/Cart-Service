@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @DataJpaTest
 @Import(CartEntityRepositoryImpl.class)
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Sql(scripts= {"/data/mysql/schema.sql", "/data/mysql/data.sql"})
+@Sql(scripts= {"/data/h2/schema.sql", "/data/h2/data.sql"})
 class CartEntityRepositoryImplTest{
 
     @Autowired

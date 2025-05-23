@@ -20,7 +20,7 @@ import java.util.UUID;
 public class PaymentMethodEntity {
 
     @Id
-    @Column(name="ID", nullable=false)
+    @Column(name="ID")
     private UUID id;
 
     @Column(name="NAME")
