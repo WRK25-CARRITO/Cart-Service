@@ -23,7 +23,7 @@ class CartControllerTest {
     private CartServices cartServices;
 
     @Test
-    void testShouldReturn204WhenDeleted() throws Exception {
+    void should_Return204_WhenDeletingCartById() throws Exception {
         UUID id = UUID.randomUUID();
 
         mockMvc.perform(delete("/carts/" + id))
@@ -33,7 +33,7 @@ class CartControllerTest {
     }
 
     @Test
-    void testShouldReturn400WhenIllegalArgument() throws Exception {
+    void should_Return400_WhenDeletingCartById() throws Exception {
         UUID id = UUID.randomUUID();
         doThrow(new IllegalArgumentException()).when(cartServices).delete(id);
 
@@ -43,11 +43,41 @@ class CartControllerTest {
     }
 
     @Test
-    void testShouldReturn404WhenNotFound() throws Exception {
+    void should_Return404_WhenCart_NotFound() throws Exception {
         UUID id = UUID.randomUUID();
         doThrow(new IllegalStateException()).when(cartServices).delete(id);
 
         mockMvc.perform(delete("/carts/" + id))
                 .andExpect(status().isNotFound());
     }
+
+    @Test
+    void should_Return204_WhenDeletingCartByUserId() throws Exception {
+        UUID id = UUID.randomUUID();
+
+        mockMvc.perform(delete("/carts/user/" + id))
+                .andExpect(status().isNoContent());
+
+        verify(cartServices).deleteAllByUserId(id);
+    }
+
+    @Test
+    void should_Return400_WhenDeletingCartByUserId() throws Exception {
+        UUID id = UUID.randomUUID();
+        doThrow(new IllegalArgumentException()).when(cartServices).deleteAllByUserId(id);
+
+        mockMvc.perform(delete("/carts/user/" + id))
+                .andExpect(status().isBadRequest());
+
+    }
+
+    @Test
+    void should_Return404_WhenCartByUser_NotFound() throws Exception {
+        UUID id = UUID.randomUUID();
+        doThrow(new IllegalStateException()).when(cartServices).deleteAllByUserId(id);
+
+        mockMvc.perform(delete("/carts/user/" + id))
+                .andExpect(status().isNotFound());
+    }
+
 }

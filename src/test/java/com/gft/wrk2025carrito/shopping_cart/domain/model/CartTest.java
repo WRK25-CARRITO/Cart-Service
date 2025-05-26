@@ -1,13 +1,13 @@
 package com.gft.wrk2025carrito.shopping_cart.domain.model;
 
-import com.gft.wrk2025carrito.shopping_cart.domain.model.Cart.Cart;
-import com.gft.wrk2025carrito.shopping_cart.domain.model.Cart.CartId;
-import com.gft.wrk2025carrito.shopping_cart.domain.model.Cart.CartState;
-import com.gft.wrk2025carrito.shopping_cart.domain.model.CartDetail.CartDetail;
-import com.gft.wrk2025carrito.shopping_cart.domain.model.CountryTax.CountryTax;
-import com.gft.wrk2025carrito.shopping_cart.domain.model.CountryTax.CountryTaxId;
-import com.gft.wrk2025carrito.shopping_cart.domain.model.PaymentMethod.PaymentMethod;
-import com.gft.wrk2025carrito.shopping_cart.domain.model.PaymentMethod.PaymentMethodId;
+import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.Cart;
+import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.CartId;
+import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.CartState;
+import com.gft.wrk2025carrito.shopping_cart.domain.model.cartDetail.CartDetail;
+import com.gft.wrk2025carrito.shopping_cart.domain.model.countryTax.CountryTax;
+import com.gft.wrk2025carrito.shopping_cart.domain.model.countryTax.CountryTaxId;
+import com.gft.wrk2025carrito.shopping_cart.domain.model.paymentMethod.PaymentMethod;
+import com.gft.wrk2025carrito.shopping_cart.domain.model.paymentMethod.PaymentMethodId;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
