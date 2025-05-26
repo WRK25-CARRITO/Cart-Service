@@ -1,5 +1,6 @@
 package com.gft.wrk2025carrito.shopping_cart.infrastructure.web;
 
+import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.Cart;
 import com.gft.wrk2025carrito.shopping_cart.domain.services.CartServices;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

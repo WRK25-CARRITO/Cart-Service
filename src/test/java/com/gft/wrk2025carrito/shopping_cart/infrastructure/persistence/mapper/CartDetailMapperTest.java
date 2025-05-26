@@ -1,6 +1,6 @@
 package com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.mapper;
 
-import com.gft.wrk2025carrito.shopping_cart.domain.model.CartDetail.CartDetail;
+import com.gft.wrk2025carrito.shopping_cart.domain.model.cartDetail.CartDetail;
 import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.entity.CartDetailEntity;
 import org.junit.jupiter.api.Test;
 

@@ -1,8 +1,8 @@
-package com.gft.wrk2025carrito.shopping_cart.domain.model.Cart;
+package com.gft.wrk2025carrito.shopping_cart.domain.model.cart;
 
-import com.gft.wrk2025carrito.shopping_cart.domain.model.CartDetail.CartDetail;
-import com.gft.wrk2025carrito.shopping_cart.domain.model.CountryTax.CountryTax;
-import com.gft.wrk2025carrito.shopping_cart.domain.model.PaymentMethod.PaymentMethod;
+import com.gft.wrk2025carrito.shopping_cart.domain.model.cartDetail.CartDetail;
+import com.gft.wrk2025carrito.shopping_cart.domain.model.countryTax.CountryTax;
+import com.gft.wrk2025carrito.shopping_cart.domain.model.paymentMethod.PaymentMethod;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -53,6 +53,13 @@ public class Cart {
             }
         }
 
+        if(createdAt == null) {
+            throw new IllegalArgumentException("Cart createdAt date cannot be null");
+        }
+
+        if(updatedAt == null && state == CartState.CLOSED) {
+            throw new IllegalArgumentException("Cart updatedAt date cannot be null when cart state is CLOSED");
+        }
 
         return new Cart(id, userId,  countryTax, paymentMethod, totalPrice, totalWeight,  createdAt, updatedAt, cartDetails, state, idPromotion);
     }

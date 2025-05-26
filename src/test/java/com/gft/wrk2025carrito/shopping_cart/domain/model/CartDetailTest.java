@@ -1,7 +1,7 @@
 package com.gft.wrk2025carrito.shopping_cart.domain.model;
 
-import com.gft.wrk2025carrito.shopping_cart.domain.model.Cart.CartId;
-import com.gft.wrk2025carrito.shopping_cart.domain.model.CartDetail.CartDetail;
+import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.CartId;
+import com.gft.wrk2025carrito.shopping_cart.domain.model.cartDetail.CartDetail;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
