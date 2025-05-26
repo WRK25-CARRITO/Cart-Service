@@ -1,10 +1,8 @@
 package com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.factory;
 
-import com.gft.wrk2025carrito.shopping_cart.domain.model.Cart.Cart;
-import com.gft.wrk2025carrito.shopping_cart.domain.model.Cart.CartId;
-import com.gft.wrk2025carrito.shopping_cart.domain.model.CartDetail.CartDetail;
-import com.gft.wrk2025carrito.shopping_cart.domain.model.CountryTax.CountryTaxId;
-import com.gft.wrk2025carrito.shopping_cart.domain.model.PaymentMethod.PaymentMethodId;
+import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.Cart;
+import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.CartId;
+import com.gft.wrk2025carrito.shopping_cart.domain.model.cartDetail.CartDetail;
 import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.entity.CartDetailEntity;
 import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.entity.CartEntity;
 import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.entity.CountryTaxEntity;
@@ -13,10 +11,8 @@ import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.mapper.Ca
 import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.mapper.CountryTaxMapper;
 import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.mapper.PaymentMethodMapper;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 

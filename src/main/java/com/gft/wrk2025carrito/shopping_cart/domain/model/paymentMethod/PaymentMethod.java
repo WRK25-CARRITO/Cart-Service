@@ -1,4 +1,4 @@
-package com.gft.wrk2025carrito.shopping_cart.domain.model.PaymentMethod;
+package com.gft.wrk2025carrito.shopping_cart.domain.model.paymentMethod;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;

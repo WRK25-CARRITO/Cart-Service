@@ -20,4 +20,10 @@ public class CartController {
         cartServices.delete(id);
     }
 
+    @DeleteMapping("/user/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteByUser(@PathVariable UUID id) {
+        cartServices.deleteAllByUserId(id);
+    }
+
 }

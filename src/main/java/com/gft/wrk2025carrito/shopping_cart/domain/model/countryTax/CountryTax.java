@@ -1,4 +1,4 @@
-package com.gft.wrk2025carrito.shopping_cart.domain.model.CountryTax;
+package com.gft.wrk2025carrito.shopping_cart.domain.model.countryTax;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;

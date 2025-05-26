@@ -1,8 +1,8 @@
-package com.gft.wrk2025carrito.shopping_cart.domain.model.Cart;
+package com.gft.wrk2025carrito.shopping_cart.domain.model.cart;
 
-import com.gft.wrk2025carrito.shopping_cart.domain.model.CartDetail.CartDetail;
-import com.gft.wrk2025carrito.shopping_cart.domain.model.CountryTax.CountryTax;
-import com.gft.wrk2025carrito.shopping_cart.domain.model.PaymentMethod.PaymentMethod;
+import com.gft.wrk2025carrito.shopping_cart.domain.model.cartDetail.CartDetail;
+import com.gft.wrk2025carrito.shopping_cart.domain.model.countryTax.CountryTax;
+import com.gft.wrk2025carrito.shopping_cart.domain.model.paymentMethod.PaymentMethod;
 import lombok.*;
 
 import java.math.BigDecimal;

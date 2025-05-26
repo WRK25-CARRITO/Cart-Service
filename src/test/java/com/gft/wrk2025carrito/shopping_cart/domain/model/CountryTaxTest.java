@@ -1,7 +1,7 @@
 package com.gft.wrk2025carrito.shopping_cart.domain.model;
 
-import com.gft.wrk2025carrito.shopping_cart.domain.model.CountryTax.CountryTax;
-import com.gft.wrk2025carrito.shopping_cart.domain.model.CountryTax.CountryTaxId;
+import com.gft.wrk2025carrito.shopping_cart.domain.model.countryTax.CountryTax;
+import com.gft.wrk2025carrito.shopping_cart.domain.model.countryTax.CountryTaxId;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
