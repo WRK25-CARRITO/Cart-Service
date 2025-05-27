@@ -1,6 +1,10 @@
 package com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.repository.impl;
 
 
+import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.Cart;
+import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.CartId;
+import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.CartState;
+import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.entity.CartEntity;
 import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.factory.CartFactory;
 import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.mapper.CountryTaxMapper;
 import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.mapper.PaymentMethodMapper;
@@ -11,6 +15,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.jdbc.Sql;
 
+import java.util.Date;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -78,6 +83,29 @@ class CartEntityRepositoryImplTest{
         cartEntityRepository.deleteAllByUserId(userId);
 
         assertTrue(cartEntityRepository.findByUserId(userId).isEmpty(), "Carts should be removed after deletion");
+    }
+
+    @Test
+    void cartExistsByUserIdAndStateActiveTest() {
+
+        boolean prueba1 = cartEntityRepository.cartExistsByUserIdAndStateActive(UUID.fromString ("2f05a6f9-87dc-4ea5-a23c-b05265055334"));
+        boolean prueba2 = cartEntityRepository.cartExistsByUserIdAndStateActive(UUID.fromString("11101c19-0f41-4e17-8567-474937f6ca42"));
+
+        assertTrue(prueba1);
+        assertFalse(prueba2);
+
+    }
+
+    @Test
+    void create() {
+        CartId cartID = new CartId();
+        UUID userId = UUID.fromString("2f05a6f9-87dc-4ea5-a23c-b05265055334");
+        Cart cart = Cart.build(cartID, userId, null, null, null, null, new Date(), null, null, CartState.ACTIVE, null);
+
+        cart.setCreatedAt(new Date());
+
+        cartEntityRepository.create(cart);
+
     }
 
 }

@@ -4,6 +4,7 @@ import com.gft.wrk2025carrito.shopping_cart.domain.services.CartServices;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -11,6 +12,7 @@ import java.util.UUID;
 
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(CartController.class)
@@ -78,6 +80,38 @@ class CartControllerTest {
 
         mockMvc.perform(delete("/carts/user/" + id))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void should_Return201_WhenCreatingCartSuccessfully() throws Exception {
+        UUID userId = UUID.randomUUID();
+
+        mockMvc.perform(post("/carts")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("\"" + userId + "\""))
+                .andExpect(status().isCreated());
+
+        verify(cartServices).createCart(userId);
+    }
+
+    @Test
+    void should_Return400_WhenCreatingCartWithInvalidInput() throws Exception {
+        mockMvc.perform(post("/carts")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("null"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void should_Return400_WhenCartAlreadyExists() throws Exception {
+        UUID userId = UUID.randomUUID();
+        doThrow(new IllegalArgumentException(" An active cart already exists for user"))
+                .when(cartServices).createCart(userId);
+
+        mockMvc.perform(post("/carts")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("\"" + userId + "\""))
+                .andExpect(status().isBadRequest());
     }
 
 }

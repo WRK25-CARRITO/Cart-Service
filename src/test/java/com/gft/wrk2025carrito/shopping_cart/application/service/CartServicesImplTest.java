@@ -1,6 +1,8 @@
 package com.gft.wrk2025carrito.shopping_cart.application.service;
 
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.Cart;
+import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.CartId;
+import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.CartState;
 import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.repository.impl.CartEntityRepositoryImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -9,6 +11,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -69,6 +72,50 @@ class CartServicesImplTest {
         cartService.deleteAllByUserId(id);
 
         verify(repository, times(1)).deleteAllByUserId(id);
+    }
+
+
+
+    @Test
+    void shouldThrowExceptionWhenUserIdIsNull() {
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            cartService.createCart(null);
+        });
+        assertEquals("User ID must not be null", exception.getMessage());
+    }
+
+    @Test
+    void shouldThrowExceptionIfActiveCartExists() {
+        UUID userId = UUID.randomUUID();
+        when(repository.cartExistsByUserIdAndStateActive(userId)).thenReturn(true);
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            cartService.createCart(userId);
+        });
+        assertEquals(" An active cart already exists for user", exception.getMessage());
+    }
+
+    @Test
+    void shouldCreateCartIfNoneExists() {
+        UUID userId = UUID.randomUUID();
+        when(repository.cartExistsByUserIdAndStateActive(userId)).thenReturn(false);
+
+        Cart expectedCart = Cart.build(
+                new CartId(), userId, null, null, null, null,
+                new Date(), null,
+                java.util.Collections.emptyList(),
+                CartState.ACTIVE,
+                java.util.Collections.emptyList()
+        );
+
+        when(repository.create(any(Cart.class))).thenReturn(expectedCart);
+
+        Cart result = cartService.createCart(userId);
+
+        assertNotNull(result);
+        assertEquals(userId, result.getUserId());
+        assertEquals(CartState.ACTIVE, result.getState());
+        verify(repository).create(any(Cart.class));
     }
 
 }

@@ -1,7 +1,9 @@
 package com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.repository.impl;
 
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.Cart;
+import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.CartState;
 import com.gft.wrk2025carrito.shopping_cart.domain.repository.CartRepository;
+import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.entity.CartEntity;
 import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.factory.CartFactory;
 import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.repository.CartEntityJpaRepository;
 import lombok.AllArgsConstructor;
@@ -38,4 +40,17 @@ public class CartEntityRepositoryImpl implements CartRepository {
     public void deleteAllByUserId(UUID userId) {
         jpaRepository.deleteAllByUserId(userId);
     }
+
+    @Override
+    public boolean cartExistsByUserIdAndStateActive(UUID userId) {
+        return jpaRepository.existsByUserIdAndState(userId, CartState.ACTIVE);
+    }
+
+    @Override
+    public Cart create(Cart cart) {
+        CartEntity cartEntity = cartFactory.toEntity(cart);
+
+        return cartFactory.toDomain(jpaRepository.save(cartEntity));
+    }
+
 }

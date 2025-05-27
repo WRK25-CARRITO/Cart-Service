@@ -29,13 +29,13 @@ public class Cart {
     private CartState state;
     private List<UUID> promotionIds;
 
-    public static Cart build(CartId id, UUID userId, CountryTax countryTax, PaymentMethod paymentMethod, BigDecimal totalPrice, double totalWeight, Date createdAt , Date updatedAt, List<CartDetail> cartDetails, CartState state, List<UUID> idPromotion) {
+    public static Cart build(CartId id, UUID userId, CountryTax countryTax, PaymentMethod paymentMethod, BigDecimal totalPrice, Double totalWeight, Date createdAt , Date updatedAt, List<CartDetail> cartDetails, CartState state, List<UUID> idPromotion) {
 
-        if (totalPrice.doubleValue() < 0) {
+        if (totalPrice != null && totalPrice.doubleValue() < 0) {
             throw new IllegalArgumentException("Price cannot be negative");
         }
 
-        if (totalWeight < 0) {
+        if (totalWeight != null && totalWeight < 0) {
             throw new IllegalArgumentException("Weight cannot be negative");
         }
 

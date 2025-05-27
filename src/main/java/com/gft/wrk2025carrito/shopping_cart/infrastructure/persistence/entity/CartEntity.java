@@ -27,7 +27,7 @@ public class CartEntity {
     private UUID userId;
 
     @Column(name = "TOTAL_WEIGHT")
-    private double totalWeight;
+    private Double totalWeight;
 
     @ManyToOne
     @JoinColumn(name = "country_Tax_Id")
