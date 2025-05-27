@@ -7,9 +7,11 @@ import com.gft.wrk2025carrito.shopping_cart.domain.model.countryTax.CountryTax;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.countryTax.CountryTaxId;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.paymentMethod.PaymentMethod;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.paymentMethod.PaymentMethodId;
+import com.gft.wrk2025carrito.shopping_cart.domain.repository.CartRepository;
 import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.entity.CartEntity;
 import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.entity.CountryTaxEntity;
 import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.entity.PaymentMethodEntity;
+import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.mapper.CartDetailMapper;
 import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.mapper.CountryTaxMapper;
 import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.mapper.PaymentMethodMapper;
 import org.junit.jupiter.api.Test;
@@ -34,6 +36,9 @@ class CartFactoryTest {
 
     @Mock
     private PaymentMethodMapper paymentMethodMapper;
+
+    @Mock
+    private CartDetailMapper cartDetailMapper;
 
     @InjectMocks
     private CartFactory cartFactory;

@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class CartDetailMapper {
 
-    public static CartDetailEntity toEntity(CartDetail cartDetailDomain) {
+    public CartDetailEntity toEntity(CartDetail cartDetailDomain) {
 
         if(cartDetailDomain == null) return null;
 
@@ -19,7 +19,7 @@ public class CartDetailMapper {
                 .build();
     }
 
-    public static CartDetail toDomain(CartDetailEntity cartDetailEntity) {
+    public CartDetail toDomain(CartDetailEntity cartDetailEntity) {
 
         if(cartDetailEntity == null) return null;
 
