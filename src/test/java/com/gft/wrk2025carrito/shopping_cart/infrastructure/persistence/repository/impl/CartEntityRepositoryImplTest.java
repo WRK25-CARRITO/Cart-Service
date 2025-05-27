@@ -4,7 +4,6 @@ package com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.reposito
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.Cart;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.CartId;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.CartState;
-import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.entity.CartEntity;
 import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.factory.CartFactory;
 import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.mapper.CountryTaxMapper;
 import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.mapper.PaymentMethodMapper;
