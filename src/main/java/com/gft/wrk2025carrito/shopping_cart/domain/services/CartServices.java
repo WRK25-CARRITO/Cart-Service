@@ -12,5 +12,12 @@ public interface CartServices {
      */
     void delete(UUID id);
 
+    /**
+     *
+     * If parameter id is null throws exception
+     */
+    void deleteAllByUserId(UUID id);
+
+
     void update(Cart cart);
 }

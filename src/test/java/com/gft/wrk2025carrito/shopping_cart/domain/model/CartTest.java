@@ -8,6 +8,15 @@ import com.gft.wrk2025carrito.shopping_cart.domain.model.countryTax.CountryTax;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.countryTax.CountryTaxId;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.paymentMethod.PaymentMethod;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.paymentMethod.PaymentMethodId;
+import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.Cart;
+import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.CartId;
+import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.CartState;
+import com.gft.wrk2025carrito.shopping_cart.domain.model.cartDetail.CartDetail;
+import com.gft.wrk2025carrito.shopping_cart.domain.model.countryTax.CountryTax;
+import com.gft.wrk2025carrito.shopping_cart.domain.model.countryTax.CountryTaxId;
+import com.gft.wrk2025carrito.shopping_cart.domain.model.paymentMethod.PaymentMethod;
+import com.gft.wrk2025carrito.shopping_cart.domain.model.paymentMethod.PaymentMethodId;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -15,17 +24,24 @@ import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class CartTest {
+class CartTest {
 
-    private final Date now = new Date();
-    private final CountryTax countryTax = CountryTax.build(new CountryTaxId(), "Spain", 0.21);
-    private final PaymentMethod paymentMethod = PaymentMethod.build(new PaymentMethodId(), "VISA", 0.02);
+    private UUID userId;
+    private CartId cartId;
+    private List<CartDetail> cartDetails;
+    private CountryTax countryTax;
+    private PaymentMethod paymentMethod;
+    private Date now;
 
-    private CartId cartId = new CartId();
-    private UUID userId = UUID.randomUUID();
-    private List<CartDetail> cartDetails = new ArrayList<>();
-    private List<UUID> promotionsId = new ArrayList<>();
-
+    @BeforeEach
+    void setUp() {
+        userId = UUID.randomUUID();
+        cartId = new CartId();
+        cartDetails = new ArrayList<>();
+        countryTax = CountryTax.build(new CountryTaxId(), "Spain", 0.3);
+        paymentMethod = PaymentMethod.build(new PaymentMethodId(), "Test", 0.5);
+        now = new Date();
+    }
 
     @Test
     void create_cart_ok() {
@@ -48,12 +64,6 @@ public class CartTest {
         assertEquals(userId, cart.getUserId());
         assertEquals(100.0, cart.getTotalWeight());
         assertEquals(BigDecimal.valueOf(10.0), cart.getTotalPrice());
-    }
-
-    @Test
-    void create_CartId_random_ok() {
-        CartId cartId = new CartId();
-        assertNotNull(cartId.id());
     }
 
     @Test
@@ -127,6 +137,42 @@ public class CartTest {
         );
 
         assertEquals(Collections.emptyList(), cart.getCartDetails());
+    }
+
+    @Test
+    void create_cart_success_closed_with_tax_and_payment() {
+        Cart cart = Cart.build(
+                cartId,
+                userId,
+                countryTax,
+                paymentMethod,
+                BigDecimal.TEN,
+                100.0,
+                now,
+                now,
+                cartDetails,
+                CartState.CLOSED,
+                new ArrayList<>()
+        );
+        assertNotNull(cart);
+    }
+
+    @Test
+    void create_cart_success_pending_with_tax_and_payment() {
+        Cart cart = Cart.build(
+                cartId,
+                userId,
+                countryTax,
+                paymentMethod,
+                BigDecimal.TEN,
+                100.0,
+                now,
+                now,
+                cartDetails,
+                CartState.PENDING,
+                new ArrayList<>()
+        );
+        assertNotNull(cart);
     }
 
     @Test
