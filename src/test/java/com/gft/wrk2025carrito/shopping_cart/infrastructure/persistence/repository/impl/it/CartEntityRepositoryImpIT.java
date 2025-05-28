@@ -25,9 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
         PaymentMethodMapper.class,
         CartDetailMapper.class
 })
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @ActiveProfiles("test")
-//@Sql(scripts= {"/data/h2/schema.sql", "/data/h2/data.sql"})
 class CartEntityRepositoryImpIT {
 
     @Autowired

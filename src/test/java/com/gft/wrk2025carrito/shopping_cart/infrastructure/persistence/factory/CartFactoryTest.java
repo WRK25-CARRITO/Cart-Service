@@ -73,7 +73,6 @@ class CartFactoryTest {
                 .promotionIds(Collections.emptyList())
                 .build();
 
-        // explota en el toDomain pq es null el id
         when(countryTaxMapper.toDomain(taxEntity)).thenReturn(CountryTax.build(new CountryTaxId(), "ES", 0.2));
         when(paymentMethodMapper.toDomain(paymentEntity)).thenReturn(PaymentMethod.build(new PaymentMethodId(), "VISA", 0.3));
 

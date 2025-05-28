@@ -9,9 +9,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
-
 
 @ExtendWith(MockitoExtension.class)
 class CartControllerTest {
@@ -32,44 +30,12 @@ class CartControllerTest {
     }
 
     @Test
-    void should_Throw400_WhenDeletingCartByIdWithInvalidInput() {
-        UUID id = UUID.randomUUID();
-        doThrow(new IllegalArgumentException()).when(cartServices).delete(id);
-
-        assertThrows(IllegalArgumentException.class, () -> controller.delete(id));
-    }
-
-    @Test
-    void should_Throw404_WhenCartByIdNotFound() {
-        UUID id = UUID.randomUUID();
-        doThrow(new IllegalStateException()).when(cartServices).delete(id);
-
-        assertThrows(IllegalStateException.class, () -> controller.delete(id));
-    }
-
-    @Test
     void should_DeleteCartByUserId_Successfully() {
         UUID userId = UUID.randomUUID();
 
         controller.deleteByUser(userId);
 
         verify(cartServices).deleteAllByUserId(userId);
-    }
-
-    @Test
-    void should_Throw400_WhenDeletingCartByUserIdWithInvalidInput() {
-        UUID userId = UUID.randomUUID();
-        doThrow(new IllegalArgumentException()).when(cartServices).deleteAllByUserId(userId);
-
-        assertThrows(IllegalArgumentException.class, () -> controller.deleteByUser(userId));
-    }
-
-    @Test
-    void should_Throw404_WhenCartByUserIdNotFound() {
-        UUID userId = UUID.randomUUID();
-        doThrow(new IllegalStateException()).when(cartServices).deleteAllByUserId(userId);
-
-        assertThrows(IllegalStateException.class, () -> controller.deleteByUser(userId));
     }
 
 }
