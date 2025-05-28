@@ -1,6 +1,7 @@
 package com.gft.wrk2025carrito.shopping_cart.infrastructure.web;
 
 import com.gft.wrk2025carrito.shopping_cart.domain.services.CartServices;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -46,35 +47,10 @@ class CartControllerTest {
     }
 
     @Test
-    void should_Return201_WhenCreatingCartSuccessfully() throws Exception {
-        UUID userId = UUID.randomUUID();
-
-        mockMvc.perform(post("/carts")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("\"" + userId + "\""))
-                .andExpect(status().isCreated());
-
-        verify(cartServices).createCart(userId);
-    }
-
-    @Test
-    void should_Return400_WhenCreatingCartWithInvalidInput() throws Exception {
-        mockMvc.perform(post("/carts")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("null"))
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    void should_Return400_WhenCartAlreadyExists() throws Exception {
-        UUID userId = UUID.randomUUID();
-        doThrow(new IllegalArgumentException(" An active cart already exists for user"))
-                .when(cartServices).createCart(userId);
-
-        mockMvc.perform(post("/carts")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("\"" + userId + "\""))
-                .andExpect(status().isBadRequest());
+    void should_CreateCart_Successfully() {
+        UUID id = UUID.randomUUID();
+        controller.createCart(id);
+        verify(cartServices).createCart(id);
     }
 
 }

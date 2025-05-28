@@ -29,7 +29,7 @@ public class CartController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Cart createCart(@RequestBody UUID userId) {
+    public Cart createCart(@RequestParam UUID userId) {
         return cartServices.createCart(userId);}
 
 }
