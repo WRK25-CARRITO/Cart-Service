@@ -1,7 +1,7 @@
 package com.gft.wrk2025carrito.shopping_cart.domain.service;
 
 
-import com.gft.wrk2025carrito.shopping_cart.application.service.impl.CartServicesImpl;
+import com.gft.wrk2025carrito.shopping_cart.application.service.CartServicesImpl;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.Cart;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.CartId;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.CartState;

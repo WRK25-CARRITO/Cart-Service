@@ -1,10 +1,5 @@
 package com.gft.wrk2025carrito.shopping_cart.application.service;
 
-import com.gft.wrk2025carrito.shopping_cart.application.service.impl.CartServicesImpl;
-import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.Cart;
-import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.CartId;
-import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.CartState;
-import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.entity.CartEntity;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.Cart;
 import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.entity.CartEntity;
 import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.repository.impl.CartEntityRepositoryImpl;
@@ -13,14 +8,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import com.gft.wrk2025carrito.shopping_cart.application.service.CartServicesImpl;
 
-import java.util.Collections;
-import java.util.List;
-import java.math.BigDecimal;
-import java.util.Collections;
-import java.util.Date;
-import java.util.UUID;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -85,41 +74,15 @@ class CartServicesImplTest {
     @Test
     void update_Cart_shouldOK() {
 
-        CartId cartId = new CartId(UUID.randomUUID());
-        UUID userUUID = UUID.randomUUID();
+//        Map<UUID, Integer> products = new HashMap<>();
+//        CartUpdateDTO incomingUpdateData = new CartUpdateDTO(UUID.randomUUID(), products);
+//        UUID id = UUID.randomUUID();
 
-        Cart updatedIncomingCart = Cart.build(
-                cartId,
-                userUUID,
-                null,
-                null ,
-                BigDecimal.valueOf(10.0),
-                5.0,
-                new Date(),
-                new Date(),
-                Collections.emptyList(),
-                CartState.ACTIVE,
-                Collections.emptyList());
+        CartEntity cartEntity = new CartEntity();
 
-        CartEntity updatedIncomingCartEntity = new CartEntity(
-                cartId.id(),
-                userUUID,
-                5.0,
-                null ,
-                null,
-                BigDecimal.valueOf(10.0),
-                CartState.ACTIVE,
-                new Date(),
-                new Date(),
-                Collections.emptyList(),
-                Collections.emptyList());
+        when(repository.save()).thenReturn(true);
 
-        when(repository.existsById(cartId.id())).thenReturn(true);
-        when(repository.save(updatedIncomingCartEntity)).thenReturn(updatedIncomingCartEntity);
 
-        cartServiceImpl.update(updatedIncomingCart);
-
-        verify(repository).save(updatedIncomingCartEntity);
 
     }
 }

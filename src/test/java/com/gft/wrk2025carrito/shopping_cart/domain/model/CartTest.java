@@ -32,6 +32,7 @@ class CartTest {
     private CountryTax countryTax;
     private PaymentMethod paymentMethod;
     private Date now;
+    private List<UUID> promotionsId;
 
     @BeforeEach
     void setUp() {
@@ -41,6 +42,7 @@ class CartTest {
         countryTax = CountryTax.build(new CountryTaxId(), "Spain", 0.3);
         paymentMethod = PaymentMethod.build(new PaymentMethodId(), "Test", 0.5);
         now = new Date();
+        promotionsId = new ArrayList<>();
     }
 
     @Test
@@ -140,24 +142,6 @@ class CartTest {
     }
 
     @Test
-    void create_cart_success_closed_with_tax_and_payment() {
-        Cart cart = Cart.build(
-                cartId,
-                userId,
-                countryTax,
-                paymentMethod,
-                BigDecimal.TEN,
-                100.0,
-                now,
-                now,
-                cartDetails,
-                CartState.CLOSED,
-                new ArrayList<>()
-        );
-        assertNotNull(cart);
-    }
-
-    @Test
     void create_cart_success_pending_with_tax_and_payment() {
         Cart cart = Cart.build(
                 cartId,
@@ -247,20 +231,6 @@ class CartTest {
         List<UUID> promotionsId = new ArrayList<>();
 
         Cart cart = Cart.build(cartId, userId, countryTax, paymentMethod, BigDecimal.valueOf(10.0), 5.0, now, now, cartDetails, CartState.CLOSED, promotionsId);
-
-        assertNotNull(cart);
-    }
-
-    @Test
-    void create_cart_success_pending_with_tax_and_payment() {
-        UUID userId = UUID.randomUUID();
-        CartId cartId = new CartId();
-
-
-        List<CartDetail> cartDetails = new ArrayList<>();
-        List<UUID> promotionsId = new ArrayList<>();
-
-        Cart cart = Cart.build(cartId, userId, countryTax, paymentMethod, BigDecimal.valueOf(10.0), 5.0, now, now, cartDetails, CartState.PENDING, promotionsId);
 
         assertNotNull(cart);
     }
