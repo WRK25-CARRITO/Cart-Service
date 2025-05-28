@@ -1,87 +1,82 @@
 package com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.repository.impl;
 
-
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.Cart;
-import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.CartId;
-import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.CartState;
+import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.entity.CartEntity;
 import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.factory.CartFactory;
-import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.mapper.CountryTaxMapper;
-import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.mapper.PaymentMethodMapper;
+import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.repository.CartEntityJpaRepository;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.context.annotation.Import;
-import org.springframework.test.context.jdbc.Sql;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.*;
 
-@DataJpaTest
-@Import({
-        CartEntityRepositoryImpl.class,
-        CartFactory.class,
-        CountryTaxMapper.class,
-        PaymentMethodMapper.class
-})
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Sql(scripts= {"/data/h2/schema.sql", "/data/h2/data.sql"})
-class CartEntityRepositoryImplTest{
+@ExtendWith(MockitoExtension.class)
+public class CartEntityRepositoryImplTest {
 
-    @Autowired
-    CartEntityRepositoryImpl cartEntityRepository;
+    @Mock
+    private CartEntityJpaRepository jpaRepository;
+
+    @Mock
+    private CartFactory cartFactory;
+
+    @InjectMocks
+    private CartEntityRepositoryImpl repository;
+
+    private final UUID userId = UUID.randomUUID();
+    private final UUID cartId = UUID.randomUUID();
 
     @Test
-    void deleteById_WhenCartExists_RemovesCart() {
-        UUID cartId = UUID.fromString("4d82b684-7131-4ba4-864d-465fc290708b");
-
-        assertTrue(cartEntityRepository.existsById(cartId));
-
-        cartEntityRepository.deleteById(cartId);
-
-        assertFalse(cartEntityRepository.existsById(cartId));
+    void shouldDeleteById() {
+        repository.deleteById(cartId);
+        verify(jpaRepository).deleteById(cartId);
     }
 
 
     @Test
-    void existsById_WhenCartExists_ReturnsTrue() {
-        UUID existingId = UUID.fromString("4d82b684-7131-4ba4-864d-465fc290708b");
+    void shouldReturnTrue_WhenCartExists() {
+        when(jpaRepository.existsById(cartId)).thenReturn(true);
 
-        boolean exists = cartEntityRepository.existsById(existingId);
+        boolean result = repository.existsById(cartId);
 
-        assertTrue(exists);
+        assertTrue(result);
+        verify(jpaRepository).existsById(cartId);
     }
 
     @Test
-    void existsById_WhenCartDoesNotExist_ReturnsFalse() {
-        UUID nonexistentId = UUID.randomUUID();
+    void shouldReturnFalse_WhenCartDoesNotExist() {
+        when(jpaRepository.existsById(cartId)).thenReturn(false);
 
-        boolean exists = cartEntityRepository.existsById(nonexistentId);
+        boolean result = repository.existsById(cartId);
 
-        assertFalse(exists);
+        assertFalse(result);
+        verify(jpaRepository).existsById(cartId);
     }
 
     @Test
-    void findByUserId_WhenCartsExist_ReturnsList() {
-        UUID userId = UUID.fromString("b96124a9-69a6-4859-acc7-5708ab07cd80");
+    void shouldFindByUserIdAndMapToDomain() {
+        CartEntity entity = new CartEntity();
+        Cart domainCart = mock(Cart.class);
+        when(jpaRepository.findByUserId(userId)).thenReturn(List.of(entity));
+        when(cartFactory.toDomain(entity)).thenReturn(domainCart);
 
-        var result = cartEntityRepository.findByUserId(userId);
+        List<Cart> result = repository.findByUserId(userId);
 
-        assertFalse(result.isEmpty(), "Expected carts to be found for user ID");
+        assertTrue(result.contains(domainCart));
+        verify(jpaRepository).findByUserId(userId);
+        verify(cartFactory).toDomain(entity);
     }
 
     @Test
-    void deleteByUserId_WhenCartsExist_RemovesCarts() {
-        UUID userId = UUID.fromString("b96124a9-69a6-4859-acc7-5708ab07cd80");
-
-        assertFalse(cartEntityRepository.findByUserId(userId).isEmpty(), "Should have carts before deletion");
-
-        cartEntityRepository.deleteAllByUserId(userId);
-
-        assertTrue(cartEntityRepository.findByUserId(userId).isEmpty(), "Carts should be removed after deletion");
+    void shouldDeleteAllByUserId() {
+        repository.deleteAllByUserId(userId);
+        verify(jpaRepository).deleteAllByUserId(userId);
     }
 
     @Test

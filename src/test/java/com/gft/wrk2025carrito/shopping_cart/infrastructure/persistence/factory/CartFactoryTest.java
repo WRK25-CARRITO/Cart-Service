@@ -10,6 +10,7 @@ import com.gft.wrk2025carrito.shopping_cart.domain.model.paymentMethod.PaymentMe
 import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.entity.CartEntity;
 import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.entity.CountryTaxEntity;
 import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.entity.PaymentMethodEntity;
+import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.mapper.CartDetailMapper;
 import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.mapper.CountryTaxMapper;
 import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.mapper.PaymentMethodMapper;
 import org.junit.jupiter.api.Test;
@@ -34,6 +35,9 @@ class CartFactoryTest {
 
     @Mock
     private PaymentMethodMapper paymentMethodMapper;
+
+    @Mock
+    private CartDetailMapper cartDetailMapper;
 
     @InjectMocks
     private CartFactory cartFactory;
@@ -69,7 +73,6 @@ class CartFactoryTest {
                 .promotionIds(Collections.emptyList())
                 .build();
 
-        // explota en el toDomain pq es null el id
         when(countryTaxMapper.toDomain(taxEntity)).thenReturn(CountryTax.build(new CountryTaxId(), "ES", 0.2));
         when(paymentMethodMapper.toDomain(paymentEntity)).thenReturn(PaymentMethod.build(new PaymentMethodId(), "VISA", 0.3));
 

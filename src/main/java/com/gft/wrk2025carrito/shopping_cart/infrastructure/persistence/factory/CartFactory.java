@@ -22,11 +22,12 @@ public class CartFactory {
 
     private final CountryTaxMapper countryTaxMapper;
     private final PaymentMethodMapper paymentMethodMapper;
+    private final CartDetailMapper cartDetailMapper;
 
     public Cart toDomain(CartEntity cartEntity) {
 
         List<CartDetail> cartDetails = cartEntity.getCartDetails() != null
-                ? cartEntity.getCartDetails().stream().map(CartDetailMapper::toDomain).toList()
+                ? cartEntity.getCartDetails().stream().map(cartDetailMapper::toDomain).toList()
                 : Collections.emptyList();
 
         return Cart.build(
@@ -46,7 +47,7 @@ public class CartFactory {
 
     public CartEntity toEntity(Cart cart) {
 
-        List<CartDetailEntity> cartDetails =cart.getCartDetails().stream().map(CartDetailMapper::toEntity).toList();
+        List<CartDetailEntity> cartDetails =cart.getCartDetails().stream().map(cartDetailMapper::toEntity).toList();
 
         CountryTaxEntity countryTaxEntity = countryTaxMapper.toEntity(cart.getCountryTax());
         PaymentMethodEntity paymentMethodEntity = paymentMethodMapper.toEntity(cart.getPaymentMethod());
