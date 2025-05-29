@@ -13,6 +13,7 @@ import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.mapper.Pa
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -27,8 +28,9 @@ public class CartFactory {
     public Cart toDomain(CartEntity cartEntity) {
 
         List<CartDetail> cartDetails = cartEntity.getCartDetails() != null
-                ? cartEntity.getCartDetails().stream().map(cartDetailMapper::toDomain).toList()
-                : Collections.emptyList();
+                ? new ArrayList<>(cartEntity.getCartDetails().stream().map(cartDetailMapper::toDomain).toList())
+                : new ArrayList<>();
+
 
         return Cart.build(
                 new CartId(cartEntity.getId()),
@@ -59,6 +61,8 @@ public class CartFactory {
                 .paymentMethod(paymentMethodEntity)
                 .totalPrice(cart.getTotalPrice())
                 .totalWeight(cart.getTotalWeight())
+                .createdAt(cart.getCreatedAt())
+                .updatedAt(cart.getUpdatedAt())
                 .cartDetails(cartDetails)
                 .state(cart.getState())
                 .promotionIds(cart.getPromotionIds())

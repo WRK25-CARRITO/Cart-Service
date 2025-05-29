@@ -53,7 +53,11 @@ public class CartEntity {
     private Date updatedAt;
 
     @ElementCollection(fetch = FetchType.EAGER)
-    @JoinTable(name = "CART_DETAILS", joinColumns = @JoinColumn(name = "cart_Id"))
+//    @JoinTable(name = "CART_DETAILS", joinColumns = @JoinColumn(name = "cart_Id"))
+    @CollectionTable(
+            name = "CART_DETAILS",
+            joinColumns = @JoinColumn(name = "CART_ID")
+    )
     private List<CartDetailEntity> cartDetails;
 
     @ElementCollection(fetch = FetchType.EAGER)

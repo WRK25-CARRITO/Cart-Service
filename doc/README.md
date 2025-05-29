@@ -19,14 +19,14 @@ http://localhost:8080/api/v1/carts
 
 ## · Carts
 
-| Method | Endpoint           | Descripción                     |
-|--------|--------------------|---------------------------------|
-| GET    | `/carts`           | Get all products                |
-| GET    | `/carts/{id}`      | Get a product by its ID         |
-| POST   | `/carts`           | Create new product              |
-| PUT    | `/carts/{id}`      | Update a product by its ID      |
-| DELETE | `/carts/{id}`      | Delete a product by its ID      |
-| DELETE | `/carts/user/{id}` | Delete a product by the user ID |
+| Method | Endpoint           | Descripción                  |
+|--------|--------------------|------------------------------|
+| GET    | `/carts`           | Get all carts                |
+| GET    | `/carts/{id}`      | Get a cart by its ID         |
+| POST   | `/carts`           | Create new cart              |
+| PUT    | `/carts/{id}`      | Update a cart by its ID      |
+| DELETE | `/carts/{id}`      | Delete a cart by its ID      |
+| DELETE | `/carts/user/{id}` | Delete a cart by the user ID |
 
 ---
 

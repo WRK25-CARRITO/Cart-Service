@@ -1,6 +1,8 @@
 package com.gft.wrk2025carrito.shopping_cart.application.service;
 
+import com.gft.wrk2025carrito.shopping_cart.application.dto.CartUpdateDTO;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.Cart;
+import com.gft.wrk2025carrito.shopping_cart.domain.model.cartDetail.CartDetail;
 import com.gft.wrk2025carrito.shopping_cart.domain.repository.CartRepository;
 import com.gft.wrk2025carrito.shopping_cart.domain.services.CartServices;
 import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.entity.CartEntity;
@@ -9,7 +11,10 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -31,21 +36,31 @@ public class CartServicesImpl implements CartServices {
 
     @Transactional
     @Override
-    public void update(Cart cart){
+    public void update(CartUpdateDTO cartDTO) {
+        try {
+            if (cartDTO.cartId() == null) {
+                throw new IllegalArgumentException("Cart id cannot be null");
+            }
 
-        if(cart.getId() == null){
-            throw new IllegalArgumentException("Cart id cannot be null");
+            if (!cartRepository.existsById(cartDTO.cartId())) {
+                throw new IllegalArgumentException("Cart with id " + cartDTO.cartId() + " does not exist");
+            }
+
+            Cart cart = cartRepository.findById(cartDTO.cartId());
+
+            List<CartDetail> nuevosDetalles = cartDTO.productData().entrySet().stream()
+                    .map(entry -> CartDetail.build(entry.getKey(), entry.getValue(), BigDecimal.ZERO, 0.0)) // no guardes peso/precio
+                    .toList();
+
+            cart.setCartDetails(nuevosDetalles);
+
+            cartRepository.save(cartFactory.toEntity(cart));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Unexpected error", e);
         }
-
-        if(!cartRepository.existsById(cart.getId().id())){
-            throw new IllegalArgumentException("Cart with id " + cart.getId().id() + " does not exist");
-        }
-
-        CartEntity cartEntity = cartFactory.toEntity(cart);
-        cartRepository.save(cartEntity);
-
     }
-
 
 
 

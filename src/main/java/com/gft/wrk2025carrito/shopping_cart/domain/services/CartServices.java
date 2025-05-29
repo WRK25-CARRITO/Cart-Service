@@ -1,5 +1,6 @@
 package com.gft.wrk2025carrito.shopping_cart.domain.services;
 
+import com.gft.wrk2025carrito.shopping_cart.application.dto.CartUpdateDTO;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.Cart;
 
 import java.util.UUID;
@@ -19,5 +20,5 @@ public interface CartServices {
     void deleteAllByUserId(UUID id);
 
 
-    void update(Cart cart);
+    void update(CartUpdateDTO cartDTO);
 }

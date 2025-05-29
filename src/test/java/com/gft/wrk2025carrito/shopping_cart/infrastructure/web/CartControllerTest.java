@@ -1,5 +1,6 @@
 package com.gft.wrk2025carrito.shopping_cart.infrastructure.web;
 
+import com.gft.wrk2025carrito.shopping_cart.application.dto.CartUpdateDTO;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.Cart;
 import com.gft.wrk2025carrito.shopping_cart.domain.services.CartServices;
 import org.junit.jupiter.api.Test;
@@ -38,5 +39,13 @@ class CartControllerTest {
 
         verify(cartServices).deleteAllByUserId(userId);
     }
+
+    @Test
+    void should_UpdateCart_Successfully() {
+        CartUpdateDTO dto = mock(CartUpdateDTO.class);
+        controller.update(dto);
+        verify(cartServices).update(dto);
+    }
+
 
 }

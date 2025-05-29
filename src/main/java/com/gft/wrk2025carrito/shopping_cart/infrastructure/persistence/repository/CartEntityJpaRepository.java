@@ -2,6 +2,9 @@ package com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.reposito
 
 import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.entity.CartEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.UUID;
@@ -13,4 +16,6 @@ public interface CartEntityJpaRepository extends JpaRepository<CartEntity, UUID>
     void deleteAllByUserId(UUID userId);
 
     List<CartEntity> findByUserId(UUID userId);
+
+
 }

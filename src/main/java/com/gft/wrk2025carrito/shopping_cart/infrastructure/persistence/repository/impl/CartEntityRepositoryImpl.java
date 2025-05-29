@@ -10,6 +10,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -18,14 +19,11 @@ public class CartEntityRepositoryImpl implements CartRepository {
 
     private final CartEntityJpaRepository jpaRepository;
     private final CartFactory cartFactory;
-    private final CartEntityJpaRepository cartEntityJpaRepository;
 
-    public boolean existsByCartId(CartId cartId) {
-        return cartEntityJpaRepository.existsById(cartId.id());
-    }
-
-    public CartEntity save(CartEntity newCartEntity) {
-        return cartEntityJpaRepository.save(newCartEntity);
+    @Override
+    public Cart save(CartEntity CartEntity) {
+        CartEntity entity = jpaRepository.save(CartEntity);
+        return cartFactory.toDomain(entity);
     }
 
     @Override
@@ -48,5 +46,13 @@ public class CartEntityRepositoryImpl implements CartRepository {
     @Override
     public void deleteAllByUserId(UUID userId) {
         jpaRepository.deleteAllByUserId(userId);
+    }
+
+    @Override
+    public Cart findById(UUID id) {
+        Optional<CartEntity> entity = jpaRepository.findById(id);
+
+        return entity.map(cartFactory::toDomain).orElse(null);
+
     }
 }

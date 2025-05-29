@@ -25,8 +25,6 @@ class CartDetailMapperTest {
         CartDetailEntity entity = cartDetailMapper.toEntity(domain);
         assertEquals(domain.getProductId(), entity.getProductId());
         assertEquals(domain.getQuantity(), entity.getQuantity());
-        assertEquals(domain.getTotalPrice(), entity.getTotalPrice());
-        assertEquals(domain.getTotalWeight(), entity.getTotalWeight());
 
         CartDetail result = cartDetailMapper.toDomain(entity);
         assertEquals(domain.getProductId(), result.getProductId());

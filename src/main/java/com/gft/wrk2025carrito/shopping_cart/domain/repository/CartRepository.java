@@ -14,8 +14,13 @@ public interface CartRepository {
 
     boolean existsById(UUID id);
 
-    CartEntity save(CartEntity cartEntity);
+    Cart save(CartEntity cartEntity);
+
     List<Cart> findByUserId(UUID userId);
 
     void deleteAllByUserId(UUID userId);
+
+    Cart findById(UUID id);
+
+
 }

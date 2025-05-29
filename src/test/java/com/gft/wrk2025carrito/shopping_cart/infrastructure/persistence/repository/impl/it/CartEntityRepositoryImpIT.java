@@ -1,5 +1,6 @@
 package com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.repository.impl.it;
 
+import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.entity.CartEntity;
 import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.factory.CartFactory;
 import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.mapper.CartDetailMapper;
 import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.mapper.CountryTaxMapper;
@@ -13,8 +14,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
 @Import({
@@ -79,6 +79,17 @@ class CartEntityRepositoryImpIT {
 
         assertTrue(cartEntityRepository.findByUserId(userId).isEmpty(), "Carts should be removed after deletion");
     }
+
+//    @Test
+//    void updateCartDetails_ShouldUpdateSuccessfully() {
+//        UUID cartId = UUID.fromString("4d82b684-7131-4ba4-864d-465fc290708b");
+//        CartEntity cart = jpaRepository.findById(cartId).orElseThrow();
+//        cart.setNombre("Nuevo nombre");
+//        cartEntityRepository.save(cart);
+//
+//        CartEntity updated = cartEntityRepository.findById(cartId);
+//        assertEquals("Nuevo nombre", updated.getNombre());
+//    }
 
 }
 

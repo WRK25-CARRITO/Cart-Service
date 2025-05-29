@@ -1,5 +1,6 @@
 package com.gft.wrk2025carrito.shopping_cart.application.service;
 
+import com.gft.wrk2025carrito.shopping_cart.application.dto.CartUpdateDTO;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.Cart;
 import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.entity.CartEntity;
 import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.repository.impl.CartEntityRepositoryImpl;
@@ -70,19 +71,23 @@ class CartServicesImplTest {
         verify(repository, times(1)).deleteAllByUserId(id);
     }
 
-
     @Test
-    void update_Cart_shouldOK() {
+    void should_updateCart_whenExists() {
+        UUID cartId = UUID.randomUUID();
+        UUID productId = UUID.randomUUID();
+        Map<UUID, Integer> productData = Map.of(productId, 3);
 
-//        Map<UUID, Integer> products = new HashMap<>();
-//        CartUpdateDTO incomingUpdateData = new CartUpdateDTO(UUID.randomUUID(), products);
-//        UUID id = UUID.randomUUID();
+        CartUpdateDTO dto = new CartUpdateDTO(cartId, productData);
+        Cart existingCart = mock(Cart.class);
 
-        CartEntity cartEntity = new CartEntity();
+        when(repository.existsById(cartId)).thenReturn(true);
+        when(repository.findById(cartId)).thenReturn(existingCart);
+        when(repository.save(any())).thenReturn(existingCart);
 
-        when(repository.save()).thenReturn(true);
+        cartService.update(dto);
 
-
-
+        verify(existingCart).setCartDetails(any());
+        verify(repository).save(any());
     }
+
 }

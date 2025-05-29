@@ -13,8 +13,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -76,6 +75,19 @@ public class CartEntityRepositoryImplTest {
     void shouldDeleteAllByUserId() {
         repository.deleteAllByUserId(userId);
         verify(jpaRepository).deleteAllByUserId(userId);
+    }
+
+    @Test
+    void shouldSaveCartEntity() {
+        CartEntity entity = new CartEntity();
+        Cart expectedCart = mock(Cart.class);
+
+        when(jpaRepository.save(entity)).thenReturn(entity);
+        when(cartFactory.toDomain(entity)).thenReturn(expectedCart);
+
+        Cart result = repository.save(entity);
+
+        assertEquals(expectedCart, result);
     }
 
 }
