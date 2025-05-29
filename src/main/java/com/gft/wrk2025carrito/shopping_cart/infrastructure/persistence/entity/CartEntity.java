@@ -27,7 +27,7 @@ public class CartEntity {
     private UUID userId;
 
     @Column(name = "TOTAL_WEIGHT")
-    private double totalWeight;
+    private Double totalWeight;
 
     @ManyToOne
     @JoinColumn(name = "country_Tax_Id")
@@ -63,5 +63,5 @@ public class CartEntity {
     @ElementCollection(fetch = FetchType.EAGER)
     @JoinTable (name = "PROMOTIONS_CARTS", joinColumns = @JoinColumn(name = "CART_ID"))
     @Column(name = "ID_PROMOTION")
-    private List<UUID> promotionIds;
+    private List<Long> promotionIds;
 }

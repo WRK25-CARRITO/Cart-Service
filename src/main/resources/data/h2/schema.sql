@@ -23,8 +23,8 @@ CREATE TABLE IF NOT EXISTS COUNTRY_TAXES (
 CREATE TABLE IF NOT EXISTS CARTS (
     ID                  UUID                     ,
     ID_USER             UUID             NOT NULL,
-    TOTAL_PRICE         DECIMAL(10,3)            ,
-    TOTAL_WEIGHT        DOUBLE                   ,
+    TOTAL_PRICE         DECIMAL(10,3)    ,
+    TOTAL_WEIGHT        DOUBLE           ,
     COUNTRY_TAX_ID      UUID,
     PAYMENT_METHOD_ID   UUID,
     CREATED_AT          TIMESTAMP,
@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS CARTS (
 
 CREATE TABLE IF NOT EXISTS CART_DETAILS (
     CART_ID             UUID                NOT NULL,
-    PRODUCT_ID          UUID                NOT NULL,
+    PRODUCT_ID          BIGINT                NOT NULL,
     QUANTITY            INTEGER             NOT NULL,
     TOTAL_WEIGHT        DOUBLE                      ,
     TOTAL_ITEM_PRICE    DECIMAL(10,3)               ,
@@ -47,7 +47,7 @@ CREATE TABLE IF NOT EXISTS CART_DETAILS (
 );
 
 CREATE TABLE IF NOT EXISTS PROMOTIONS_CARTS(
-    ID_PROMOTION        UUID,
+    ID_PROMOTION        BIGINT,
     CART_ID             UUID            NOT NULL,
 
     PRIMARY KEY (ID_PROMOTION, CART_ID),

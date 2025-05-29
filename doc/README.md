@@ -19,14 +19,14 @@ http://localhost:8080/api/v1/carts
 
 ## · Carts
 
-| Method | Endpoint           | Descripción                  |
-|--------|--------------------|------------------------------|
-| GET    | `/carts`           | Get all carts                |
-| GET    | `/carts/{id}`      | Get a cart by its ID         |
-| POST   | `/carts`           | Create new cart              |
-| PUT    | `/carts/{id}`      | Update a cart by its ID      |
-| DELETE | `/carts/{id}`      | Delete a cart by its ID      |
-| DELETE | `/carts/user/{id}` | Delete a cart by the user ID |
+| Method | Endpoint           | Descripción                     |
+|--------|--------------------|---------------------------------|
+| GET    | `/carts`           | Get all carts                   |
+| GET    | `/carts/{id}`      | Get a cart by its ID            |
+| POST   | `/carts`           | Create new cart                 |
+| PUT    | `/carts/{id}`      | Update a cart by its ID         |
+| DELETE | `/carts/{id}`      | Delete a cart by its ID         |
+| DELETE | `/carts/user/{id}` | Delete a cart by its user ID    |
 
 ---
 
@@ -39,8 +39,8 @@ Each cart has the following fields:
 | `userId`        | UUID             | ID of the cart's user          |
 | `countryTax`    | CountryTax       | Tax applied by country         |
 | `paymentMethod` | PaymentMethod    | Payment Method used            |
-| `totalPrice`    | BigDecimal       | Sum of products price          |
-| `totalWeight`   | Double           | Sum of products weight         |
+| `totalPrice`    | BigDecimal       | The sum of the price of all products|
+| `totalWeight`   | Double           | The sum of the weight of all products|
 | `createdAt`     | Date             | Date when the cart was created |
 | `updatedAt`     | Date             | Date when the cart was updated |
 | `cartDetails`   | List<CartDetail> | Order lines of one cart        |
@@ -53,9 +53,9 @@ Each cart detail has the following fields:
 
 | Campo         | Tipo       | Descripción            |
 |---------------|------------|------------------------|
-| `quantity`    | int        | Number of products     |
-| `totalPrice`  | BigDecimal | Sum of products price  |
-| `totalWeight` | Double     | Sum of products weight |
+| `quantity`    | int        | Amount of products     |
+| `totalPrice`  | BigDecimal | Sum of the price of all products|
+| `totalWeight` | Double     | Sum of the weight of all products|
 
 
 ## · Country Tax (embedded in cart)

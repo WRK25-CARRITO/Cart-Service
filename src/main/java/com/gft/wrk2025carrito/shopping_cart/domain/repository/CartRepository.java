@@ -20,7 +20,10 @@ public interface CartRepository {
 
     void deleteAllByUserId(UUID userId);
 
-    Cart findById(UUID id);
+    boolean cartExistsByUserIdAndStateActive(UUID userId);
 
+    Cart create(Cart cart);
+
+    Cart findById(UUID id);
 
 }

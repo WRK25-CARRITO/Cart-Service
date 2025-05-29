@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
@@ -15,6 +16,7 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -82,6 +84,34 @@ public class CartControllerIT {
     @Test
     void should_Return400_WhenDeletingByUserIdInvalidUUID() throws Exception {
         mockMvc.perform(delete("/carts/user/invalid-uuid"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void should_Return201_WhenCreatingCartSuccessfully() throws Exception {
+        UUID userId = UUID.randomUUID();
+
+        mockMvc.perform(post("/carts")
+                        .param("userId", userId.toString())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isCreated());
+
+    }
+
+    @Test
+    void should_Return400_WhenCreatingCartWithInvalidUUID() throws Exception {
+        mockMvc.perform(post("/carts")
+                        .param("userId", "invalid-uuid"))
+                .andExpect(status().isBadRequest());
+    }
+
+
+    @Test
+    void should_Return400_WhenCartAlreadyExistsInActive() throws Exception {
+        UUID userId = UUID.fromString("2f05a6f9-87dc-4ea5-a23c-b05265055334");
+
+        mockMvc.perform(post("/carts")
+                        .param("userId", userId.toString()))
                 .andExpect(status().isBadRequest());
     }
 

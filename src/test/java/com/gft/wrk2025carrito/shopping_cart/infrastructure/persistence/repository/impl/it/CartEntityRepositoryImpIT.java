@@ -91,5 +91,13 @@ class CartEntityRepositoryImpIT {
 //        assertEquals("Nuevo nombre", updated.getNombre());
 //    }
 
+    @Test
+    void existsByUserIdAndCartState(){
+        UUID userId = UUID.fromString("2f05a6f9-87dc-4ea5-a23c-b05265055334");
+        boolean exists = cartEntityRepository.cartExistsByUserIdAndStateActive(userId);
+        assertTrue(exists);
+    }
+
+
 }
 
