@@ -1,5 +1,6 @@
 package com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.repository;
 
+import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.CartState;
 import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.entity.CartEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -13,4 +14,7 @@ public interface CartEntityJpaRepository extends JpaRepository<CartEntity, UUID>
     void deleteAllByUserId(UUID userId);
 
     List<CartEntity> findByUserId(UUID userId);
+
+    boolean existsByUserIdAndState(UUID userId, CartState state);
+
 }

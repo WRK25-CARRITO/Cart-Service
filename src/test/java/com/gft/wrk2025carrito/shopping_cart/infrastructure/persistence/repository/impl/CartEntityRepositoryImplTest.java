@@ -1,8 +1,14 @@
 package com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.repository.impl;
 
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.Cart;
+import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.CartId;
+import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.CartState;
+import com.gft.wrk2025carrito.shopping_cart.domain.model.cartDetail.CartDetail;
 import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.entity.CartEntity;
 import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.factory.CartFactory;
+import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.mapper.CartDetailMapper;
+import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.mapper.CountryTaxMapper;
+import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.mapper.PaymentMethodMapper;
 import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.repository.CartEntityJpaRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -10,11 +16,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -25,6 +29,15 @@ public class CartEntityRepositoryImplTest {
 
     @Mock
     private CartFactory cartFactory;
+
+    @Mock
+    private CartDetailMapper cartDetailMapper;
+
+    @Mock
+    private PaymentMethodMapper  paymentMethodMapper;
+
+    @Mock
+    private CountryTaxMapper countryTaxMapper;
 
     @InjectMocks
     private CartEntityRepositoryImpl repository;
@@ -37,6 +50,7 @@ public class CartEntityRepositoryImplTest {
         repository.deleteById(cartId);
         verify(jpaRepository).deleteById(cartId);
     }
+
 
     @Test
     void shouldReturnTrue_WhenCartExists() {
@@ -78,4 +92,48 @@ public class CartEntityRepositoryImplTest {
         verify(jpaRepository).deleteAllByUserId(userId);
     }
 
+    @Test
+    void cartExistsByUserIdAndStateActiveTest() {
+        UUID userIdWithCart = UUID.fromString("2f05a6f9-87dc-4ea5-a23c-b05265055334");
+        when(jpaRepository.existsByUserIdAndState(userIdWithCart, CartState.ACTIVE)).thenReturn(true);
+        boolean prueba = repository.cartExistsByUserIdAndStateActive(userIdWithCart);
+
+        assertTrue(prueba);
+
+
+    }
+
+    @Test
+    void cartDoesNotExistsByUserIdAndStateActiveTest() {
+        UUID userFalseId = UUID.fromString("11101c19-0f41-4e17-8567-474937f6ca42");
+        when(jpaRepository.existsByUserIdAndState(userFalseId, CartState.ACTIVE)).thenReturn(false);
+
+        boolean pruebaError = repository.cartExistsByUserIdAndStateActive(userFalseId);
+
+        assertFalse(pruebaError);
+
+    }
+
+    @Test
+    void should_SaveCartEntity_AndReturnDomainCart() {
+
+        Cart domainCart = mock(Cart.class);
+        CartEntity entityCart = mock(CartEntity.class);
+        CartEntity savedEntityCart = mock(CartEntity.class);
+        Cart expectedCart = mock(Cart.class);
+
+        when(cartFactory.toEntity(domainCart)).thenReturn(entityCart);
+        when(jpaRepository.save(entityCart)).thenReturn(savedEntityCart);
+        when(cartFactory.toDomain(savedEntityCart)).thenReturn(expectedCart);
+
+        Cart result = repository.create(domainCart);
+
+        assertEquals(expectedCart, result);
+        verify(cartFactory).toEntity(domainCart);
+        verify(jpaRepository).save(entityCart);
+        verify(cartFactory).toDomain(savedEntityCart);
+    }
+
+
 }
+

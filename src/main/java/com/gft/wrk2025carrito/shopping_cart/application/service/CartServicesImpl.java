@@ -1,12 +1,15 @@
 package com.gft.wrk2025carrito.shopping_cart.application.service;
 
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.Cart;
+import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.CartId;
+import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.CartState;
 import com.gft.wrk2025carrito.shopping_cart.domain.repository.CartRepository;
 import com.gft.wrk2025carrito.shopping_cart.domain.services.CartServices;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -37,4 +40,24 @@ public class CartServicesImpl implements CartServices {
 
         cartRepository.deleteAllByUserId(userId);
     }
+
+    @Override
+    @Transactional
+    public Cart createCart(UUID userId) {
+
+        if(userId == null) {
+            throw new IllegalArgumentException("User ID must not be null");
+        }
+
+        boolean exists = cartRepository.cartExistsByUserIdAndStateActive(userId);
+
+        if (exists){
+            throw new IllegalArgumentException(" An active cart already exists for user");
+        }
+
+        Cart cart = Cart.build(new CartId(), userId, null, null, null, null, new Date(), null, java.util.Collections.emptyList(), CartState.ACTIVE, java.util.Collections.emptyList());
+
+        return cartRepository.create(cart);
+    }
+
 }
