@@ -59,5 +59,5 @@ public class CartEntity {
     @ElementCollection(fetch = FetchType.EAGER)
     @JoinTable (name = "PROMOTIONS_CARTS", joinColumns = @JoinColumn(name = "CART_ID"))
     @Column(name = "ID_PROMOTION")
-    private List<UUID> promotionIds;
+    private List<Long> promotionIds;
 }

@@ -17,11 +17,11 @@ INSERT INTO CARTS (ID, ID_USER, total_price,total_weight, COUNTRY_TAX_ID, PAYMEN
 
 
 INSERT INTO CART_DETAILS (cart_ID, Product_ID, quantity, total_weight, total_item_price) VALUES
-    ('4d82b684-7131-4ba4-864d-465fc290708b','fcd7bd9d-c265-4f21-8330-03e35dce6170', 2, 1.5, 100.50);
+    ('4d82b684-7131-4ba4-864d-465fc290708b',0000000000001, 2, 1.5, 100.50);
 
 INSERT INTO CART_DETAILS (cart_ID, Product_ID, quantity, total_weight, total_item_price) VALUES
-    ( 'bdbfb686-3fc4-4a3b-9f70-df76cdff0791','1ca12b38-8a69-4043-9f5d-94f3237d77e2', 1, 0.8, 89.99);
+    ( 'bdbfb686-3fc4-4a3b-9f70-df76cdff0791',0000000000003, 1, 0.8, 89.99);
 
 INSERT INTO PROMOTIONS_CARTS (ID_PROMOTION, CART_ID) VALUES
-    ('926f90bb-b0c7-40bd-bbe2-7938230b4518', '4d82b684-7131-4ba4-864d-465fc290708b'),
-    ('35a44b3c-eadd-4388-9b13-65535cc7b0e6', 'bdbfb686-3fc4-4a3b-9f70-df76cdff0791');
+    (0000000000004, '4d82b684-7131-4ba4-864d-465fc290708b'),
+    (0000000000005, 'bdbfb686-3fc4-4a3b-9f70-df76cdff0791');

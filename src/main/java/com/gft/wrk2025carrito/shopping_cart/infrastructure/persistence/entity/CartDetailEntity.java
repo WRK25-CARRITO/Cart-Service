@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
-import java.util.UUID;
+
 
 @Getter
 @Setter
@@ -17,7 +17,7 @@ import java.util.UUID;
 public class CartDetailEntity {
 
     @Column(name = "PRODUCT_ID")
-    private UUID productId;
+    private Long productId;
 
     @Column(name = "QUANTITY", nullable = false)
     private Integer quantity;
