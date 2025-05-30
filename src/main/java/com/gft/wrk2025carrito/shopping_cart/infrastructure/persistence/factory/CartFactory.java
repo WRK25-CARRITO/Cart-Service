@@ -37,8 +37,8 @@ public class CartFactory {
                 cartEntity.getUserId(),
                 countryTaxMapper.toDomain(cartEntity.getCountryTax()),
                 paymentMethodMapper.toDomain(cartEntity.getPaymentMethod()),
-                cartEntity.getTotalPrice(),
-                cartEntity.getTotalWeight(),
+                null,
+                null,
                 cartEntity.getCreatedAt(),
                 cartEntity.getUpdatedAt(),
                 cartDetails,
@@ -59,8 +59,6 @@ public class CartFactory {
                 .userId(cart.getUserId())
                 .countryTax(countryTaxEntity)
                 .paymentMethod(paymentMethodEntity)
-                .totalPrice(cart.getTotalPrice())
-                .totalWeight(cart.getTotalWeight())
                 .createdAt(cart.getCreatedAt())
                 .updatedAt(cart.getUpdatedAt())
                 .cartDetails(cartDetails)

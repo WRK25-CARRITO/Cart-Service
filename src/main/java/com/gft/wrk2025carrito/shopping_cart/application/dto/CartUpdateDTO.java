@@ -5,5 +5,5 @@ import java.util.UUID;
 
 public record CartUpdateDTO(
     UUID cartId,
-    Map<UUID, Integer> productData
+    Map<Long, Integer> productData
 ){}

@@ -22,12 +22,4 @@ public class CartDetailEntity {
     @Column(name = "QUANTITY", nullable = false)
     private Integer quantity;
 
-    @Column(name = "TOTAL_WEIGHT")
-    @Transient
-    private double totalWeight;
-
-    @Column(name = "TOTAL_ITEM_PRICE")
-    @Transient
-    private BigDecimal totalPrice;
-
 }

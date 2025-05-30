@@ -5,51 +5,47 @@ DROP TABLE IF EXISTS COUNTRY_TAXES;
 DROP TABLE IF EXISTS PAYMENT_METHODS;
 
 CREATE TABLE IF NOT EXISTS PAYMENT_METHODS (
-                                               ID                  UUID                    ,
-                                               NAME                VARCHAR(100)    NOT NULL,
-                                               CHARGE              DOUBLE          NOT NULL,
+    ID                  UUID                    ,
+    NAME                VARCHAR(100)    NOT NULL,
+    CHARGE              DOUBLE          NOT NULL,
 
-                                               PRIMARY KEY (ID)
+    PRIMARY KEY (ID)
 );
 
 CREATE TABLE IF NOT EXISTS COUNTRY_TAXES (
-                                             ID                  UUID                    ,
-                                             COUNTRY             VARCHAR(100)    NOT NULL,
-                                             TAX                 DOUBLE          NOT NULL,
+    ID                  UUID                    ,
+    COUNTRY             VARCHAR(100)    NOT NULL,
+    TAX                 DOUBLE          NOT NULL,
 
-                                             PRIMARY KEY (ID)
+    PRIMARY KEY (ID)
 );
 
 CREATE TABLE IF NOT EXISTS CARTS (
-                                     ID                  UUID                     ,
-                                     ID_USER             UUID             NOT NULL,
-                                     TOTAL_PRICE         DECIMAL(10,3)            ,
-                                     TOTAL_WEIGHT        DOUBLE                   ,
-                                     COUNTRY_TAX_ID      UUID,
-                                     PAYMENT_METHOD_ID   UUID,
-                                     CREATED_AT          TIMESTAMP,
-                                     UPDATED_AT          TIMESTAMP,
-                                     STATE               VARCHAR(30)     NOT NULL,
+    ID                  UUID                     ,
+    ID_USER             UUID             NOT NULL,
+    COUNTRY_TAX_ID      UUID,
+    PAYMENT_METHOD_ID   UUID,
+    CREATED_AT          TIMESTAMP,
+    UPDATED_AT          TIMESTAMP,
+    STATE               VARCHAR(30)     NOT NULL,
 
-                                     PRIMARY KEY (ID),
-                                     FOREIGN KEY (COUNTRY_TAX_ID) REFERENCES COUNTRY_TAXES(ID),
-                                     FOREIGN KEY (PAYMENT_METHOD_ID) REFERENCES PAYMENT_METHODS(ID)
+    PRIMARY KEY (ID),
+    FOREIGN KEY (COUNTRY_TAX_ID) REFERENCES COUNTRY_TAXES(ID),
+    FOREIGN KEY (PAYMENT_METHOD_ID) REFERENCES PAYMENT_METHODS(ID)
 );
 
 CREATE TABLE IF NOT EXISTS CART_DETAILS (
-                                            CART_ID             UUID                NOT NULL,
-                                            PRODUCT_ID          UUID                NOT NULL,
-                                            QUANTITY            INTEGER             NOT NULL,
-                                            TOTAL_WEIGHT        DOUBLE                      ,
-                                            TOTAL_ITEM_PRICE    DECIMAL(10,3)               ,
+    CART_ID             UUID                NOT NULL,
+    PRODUCT_ID          BIGINT              NOT NULL,
+    QUANTITY            INTEGER             NOT NULL,
 
-                                            FOREIGN KEY (CART_ID) REFERENCES CARTS(ID) ON DELETE RESTRICT ON UPDATE CASCADE
+    FOREIGN KEY (CART_ID) REFERENCES CARTS(ID) ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS PROMOTIONS_CARTS(
-                                               ID_PROMOTION        UUID,
-                                               CART_ID             UUID            NOT NULL,
+    ID_PROMOTION        BIGINT,
+    CART_ID             UUID            NOT NULL,
 
-                                               PRIMARY KEY (ID_PROMOTION, CART_ID),
-                                               FOREIGN KEY (CART_ID) REFERENCES CARTS(ID) ON DELETE RESTRICT ON UPDATE CASCADE
+    PRIMARY KEY (ID_PROMOTION, CART_ID),
+    FOREIGN KEY (CART_ID) REFERENCES CARTS(ID) ON DELETE RESTRICT ON UPDATE CASCADE
 );

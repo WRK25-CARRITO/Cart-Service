@@ -5,6 +5,7 @@ import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.Cart;
 import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.entity.CartEntity;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.CartId;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.CartState;
+import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.factory.CartFactory;
 import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.repository.impl.CartEntityRepositoryImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,6 +27,9 @@ class CartServicesImplTest {
 
     @Mock
     private CartEntityRepositoryImpl repository;
+
+    @Mock
+    private CartFactory cartFactory;
 
     @InjectMocks
     private CartServicesImpl cartService;
@@ -80,8 +84,8 @@ class CartServicesImplTest {
     @Test
     void should_updateCart_whenExists() {
         UUID cartId = UUID.randomUUID();
-        UUID productId = UUID.randomUUID();
-        Map<UUID, Integer> productData = Map.of(productId, 3);
+        Long productId = 1L;
+        Map<Long, Integer> productData = Map.of(productId, 3);
 
         CartUpdateDTO dto = new CartUpdateDTO(cartId, productData);
         Cart existingCart = mock(Cart.class);

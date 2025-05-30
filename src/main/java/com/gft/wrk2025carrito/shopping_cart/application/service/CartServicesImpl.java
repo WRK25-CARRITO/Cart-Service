@@ -37,35 +37,29 @@ public class CartServicesImpl implements CartServices {
         cartRepository.deleteById(id);
     }
 
-    @Transactional
     @Override
+    @Transactional
     public void update(CartUpdateDTO cartDTO) {
-        try {
-            if (cartDTO.cartId() == null) {
-                throw new IllegalArgumentException("Cart id cannot be null");
-            }
-
-            if (!cartRepository.existsById(cartDTO.cartId())) {
-                throw new IllegalArgumentException("Cart with id " + cartDTO.cartId() + " does not exist");
-            }
-
-            Cart cart = cartRepository.findById(cartDTO.cartId());
-
-            List<CartDetail> nuevosDetalles = cartDTO.productData().entrySet().stream()
-                    .map(entry -> CartDetail.build(entry.getKey(), entry.getValue(), BigDecimal.ZERO, 0.0)) // no guardes peso/precio
-                    .toList();
-
-            cart.setCartDetails(nuevosDetalles);
-
-            cartRepository.save(cartFactory.toEntity(cart));
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException("Unexpected error", e);
+        if (cartDTO.cartId() == null) {
+            throw new IllegalArgumentException("Cart id cannot be null");
         }
+
+        boolean exists = cartRepository.existsById(cartDTO.cartId());
+
+        if (!exists) {
+            throw new IllegalArgumentException("Cart with id " + cartDTO.cartId() + " does not exist");
+        }
+
+        Cart cart = cartRepository.findById(cartDTO.cartId());
+
+        List<CartDetail> newCartDetails = cartDTO.productData().entrySet().stream()
+                .map(entry -> CartDetail.build(entry.getKey(), entry.getValue(), BigDecimal.ZERO, 0.0))
+                .toList();
+
+        cart.setCartDetails(newCartDetails);
+
+        cartRepository.save(cartFactory.toEntity(cart));
     }
-
-
 
     @Override
     @Transactional

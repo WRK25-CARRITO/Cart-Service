@@ -32,7 +32,7 @@ class CartTest {
     private CountryTax countryTax;
     private PaymentMethod paymentMethod;
     private Date now;
-    private List<UUID> promotionsId;
+    private List<Long> promotionsId;
 
     @BeforeEach
     void setUp() {
@@ -223,13 +223,6 @@ class CartTest {
 
     @Test
     void create_cart_success_closed_with_tax_and_payment() {
-        UUID userId = UUID.randomUUID();
-        CartId cartId = new CartId();
-
-
-        List<CartDetail> cartDetails = new ArrayList<>();
-        List<UUID> promotionsId = new ArrayList<>();
-
         Cart cart = Cart.build(cartId, userId, countryTax, paymentMethod, BigDecimal.valueOf(10.0), 5.0, now, now, cartDetails, CartState.CLOSED, promotionsId);
 
         assertNotNull(cart);
@@ -237,12 +230,6 @@ class CartTest {
 
     @Test
     void create_cart_when_stateIsClosed_and_UpdatedDateIsNull_shouldFail() {
-        UUID userId = UUID.randomUUID();
-        CartId cartId = new CartId();
-
-
-        List<CartDetail> cartDetails = new ArrayList<>();
-        List<UUID> promotionsId = new ArrayList<>();
 
         assertThrows(IllegalArgumentException.class, () -> {
             Cart.build(cartId, userId, countryTax, paymentMethod, BigDecimal.valueOf(10.0), 5.0, now, null, cartDetails, CartState.CLOSED, promotionsId);
@@ -251,12 +238,6 @@ class CartTest {
 
     @Test
     void create_cart_when_stateIsClosed_and_UpdatedDateIsNOTNull_shouldOK() {
-        UUID userId = UUID.randomUUID();
-        CartId cartId = new CartId();
-
-
-        List<CartDetail> cartDetails = new ArrayList<>();
-        List<UUID> promotionsId = new ArrayList<>();
 
         Cart cart = Cart.build(cartId, userId, countryTax, paymentMethod, BigDecimal.valueOf(10.0), 5.0, now, now, cartDetails, CartState.CLOSED, promotionsId);
         assertNotNull(cart);
@@ -264,12 +245,6 @@ class CartTest {
 
     @Test
     void create_cart_when_stateIsActive_and_CountryTaxIsNOTNull_or_PaymentMethodIsNOTNull_shouldFail() {
-        UUID userId = UUID.randomUUID();
-        CartId cartId = new CartId();
-
-
-        List<CartDetail> cartDetails = new ArrayList<>();
-        List<UUID> promotionsId = new ArrayList<>();
 
         assertThrows(IllegalArgumentException.class, () -> {
             Cart.build(cartId, userId, countryTax, paymentMethod, BigDecimal.valueOf(10.0), 5.0, now, now, cartDetails, CartState.ACTIVE, promotionsId);
@@ -279,12 +254,6 @@ class CartTest {
 
     @Test
     void create_cart_when_created_Date_is_null_shouldFail() {
-        UUID userId = UUID.randomUUID();
-        CartId cartId = new CartId();
-
-
-        List<CartDetail> cartDetails = new ArrayList<>();
-        List<UUID> promotionsId = new ArrayList<>();
 
         assertThrows(IllegalArgumentException.class, () -> {
             Cart.build(cartId, userId, countryTax, paymentMethod, BigDecimal.valueOf(10.0), 5.0, null, now, cartDetails, CartState.ACTIVE, promotionsId);

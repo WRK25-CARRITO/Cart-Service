@@ -26,9 +26,6 @@ public class CartEntity {
     @Column(name = "id_User")
     private UUID userId;
 
-    @Column(name = "TOTAL_WEIGHT")
-    private Double totalWeight;
-
     @ManyToOne
     @JoinColumn(name = "country_Tax_Id")
     private CountryTaxEntity countryTax;
@@ -36,9 +33,6 @@ public class CartEntity {
     @ManyToOne
     @JoinColumn(name = "payment_Method_Id")
     private PaymentMethodEntity paymentMethod;
-
-    @Column(name = "TOTAL_PRICE" ,columnDefinition = "DECIMAL(10,3)")
-    private BigDecimal totalPrice;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "STATE")
@@ -53,7 +47,6 @@ public class CartEntity {
     private Date updatedAt;
 
     @ElementCollection(fetch = FetchType.EAGER)
-//    @JoinTable(name = "CART_DETAILS", joinColumns = @JoinColumn(name = "cart_Id"))
     @CollectionTable(
             name = "CART_DETAILS",
             joinColumns = @JoinColumn(name = "CART_ID")

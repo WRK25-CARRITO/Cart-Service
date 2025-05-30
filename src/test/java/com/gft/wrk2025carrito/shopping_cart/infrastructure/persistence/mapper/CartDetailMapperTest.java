@@ -31,8 +31,6 @@ class CartDetailMapperTest {
         CartDetail result = cartDetailMapper.toDomain(entity);
         assertEquals(domain.getProductId(), result.getProductId());
         assertEquals(domain.getQuantity(), result.getQuantity());
-        assertEquals(domain.getTotalPrice(), result.getTotalPrice());
-        assertEquals(domain.getTotalWeight(), result.getTotalWeight());
     }
 
     @Test
