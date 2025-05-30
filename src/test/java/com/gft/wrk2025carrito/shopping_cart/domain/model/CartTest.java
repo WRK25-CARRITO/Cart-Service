@@ -38,7 +38,7 @@ class CartTest {
     }
 
     @Test
-    void create_cart_ok() {
+    void createCart_ok() {
         Cart cart = Cart.build(
                 cartId,
                 userId,
@@ -61,7 +61,7 @@ class CartTest {
     }
 
     @Test
-    void create_cart_fail_cartId_null() {
+    void createCart_fail_cartId_null() {
         assertThrows(IllegalArgumentException.class, () ->
                 Cart.build(
                         null,
@@ -79,7 +79,7 @@ class CartTest {
     }
 
     @Test
-    void create_cart_fail_negative_weight() {
+    void createCart_fail_negative_weight() {
         assertThrows(IllegalArgumentException.class, () ->
                 Cart.build(
                         cartId,
@@ -97,7 +97,7 @@ class CartTest {
     }
 
     @Test
-    void create_cart_fail_negative_price() {
+    void createCart_fail_negative_price() {
         assertThrows(IllegalArgumentException.class, () ->
                 Cart.build(
                         cartId,
@@ -115,7 +115,7 @@ class CartTest {
     }
 
     @Test
-    void create_cart_fail_cartDetails_null() {
+    void createCart_fail_cartDetails_null() {
         Cart cart =  Cart.build(
                 cartId,
                 userId,
@@ -134,7 +134,7 @@ class CartTest {
     }
 
     @Test
-    void create_cart_success_pending_with_tax_and_payment() {
+    void createCart_success_pending_with_tax_and_payment() {
         Cart cart = Cart.build(
                 cartId,
                 userId,
@@ -152,7 +152,7 @@ class CartTest {
     }
 
     @Test
-    void create_cart_success_pending_without_tax_and_payment() {
+    void createCart_success_pending_without_tax_and_payment() {
         Cart cart = Cart.build(
                 cartId,
                 userId,
@@ -170,7 +170,7 @@ class CartTest {
     }
 
     @Test
-    void create_cart_fail_non_pending_or_closed_with_tax_and_payment() {
+    void createCart_fail_non_pending_or_closed_with_tax_and_payment() {
         assertThrows(IllegalArgumentException.class, () ->
                 Cart.build(
                         cartId,
@@ -188,7 +188,7 @@ class CartTest {
     }
 
     @Test
-    void create_cart_fail_null_state() {
+    void createCart_fail_null_state() {
         assertThrows(IllegalArgumentException.class, () ->
                 Cart.build(
                         cartId,
@@ -206,7 +206,7 @@ class CartTest {
     }
 
     @Test
-    void create_cart_fail_onCreatedAt_isNull() {
+    void createCart_fail_onCreatedAt_isNull() {
         assertThrows(IllegalArgumentException.class, () ->
                 Cart.build(
                         cartId,
@@ -224,7 +224,7 @@ class CartTest {
     }
 
     @Test
-    void create_cart_fail_paymentMethod_not_null_when_state_not_pending_or_closed() {
+    void createCart_fail_paymentMethod_not_null_when_state_not_pending_or_closed() {
         assertThrows(IllegalArgumentException.class, () -> {
             Cart.build(cartId, userId, null, paymentMethod, BigDecimal.valueOf(100.0), 5.0, now, now, cartDetails, CartState.ACTIVE, promotionsId);
         });
@@ -232,14 +232,14 @@ class CartTest {
 
 
     @Test
-    void create_cart_success_closed_with_tax_and_payment() {
+    void createCart_success_closed_with_tax_and_payment() {
         Cart cart = Cart.build(cartId, userId, countryTax, paymentMethod, BigDecimal.valueOf(10.0), 5.0, now, now, cartDetails, CartState.CLOSED, promotionsId);
 
         assertNotNull(cart);
     }
 
     @Test
-    void create_cart_when_stateIsClosed_and_UpdatedDateIsNull_shouldFail() {
+    void createCart_when_stateIsClosed_and_UpdatedDateIsNull_shouldFail() {
 
         assertThrows(IllegalArgumentException.class, () -> {
             Cart.build(cartId, userId, countryTax, paymentMethod, BigDecimal.valueOf(10.0), 5.0, now, null, cartDetails, CartState.CLOSED, promotionsId);
@@ -247,14 +247,14 @@ class CartTest {
     }
 
     @Test
-    void create_cart_when_stateIsClosed_and_UpdatedDateIsNOTNull_shouldOK() {
+    void createCart_when_stateIsClosed_and_UpdatedDateIsNOTNull_shouldOK() {
 
         Cart cart = Cart.build(cartId, userId, countryTax, paymentMethod, BigDecimal.valueOf(10.0), 5.0, now, now, cartDetails, CartState.CLOSED, promotionsId);
         assertNotNull(cart);
     }
 
     @Test
-    void create_cart_when_stateIsActive_and_CountryTaxIsNOTNull_or_PaymentMethodIsNOTNull_shouldFail() {
+    void createCart_when_stateIsActive_and_CountryTaxIsNOTNull_or_PaymentMethodIsNOTNull_shouldFail() {
 
         assertThrows(IllegalArgumentException.class, () -> {
             Cart.build(cartId, userId, countryTax, paymentMethod, BigDecimal.valueOf(10.0), 5.0, now, now, cartDetails, CartState.ACTIVE, promotionsId);
@@ -263,7 +263,7 @@ class CartTest {
     }
 
     @Test
-    void create_cart_when_created_Date_is_null_shouldFail() {
+    void createCart_when_created_Date_is_null_shouldFail() {
 
         assertThrows(IllegalArgumentException.class, () -> {
             Cart.build(cartId, userId, countryTax, paymentMethod, BigDecimal.valueOf(10.0), 5.0, null, now, cartDetails, CartState.ACTIVE, promotionsId);
