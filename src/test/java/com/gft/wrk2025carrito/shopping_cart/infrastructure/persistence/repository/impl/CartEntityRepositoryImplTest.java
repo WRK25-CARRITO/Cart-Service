@@ -1,9 +1,7 @@
 package com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.repository.impl;
 
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.Cart;
-import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.CartId;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.CartState;
-import com.gft.wrk2025carrito.shopping_cart.domain.model.cartDetail.CartDetail;
 import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.entity.CartEntity;
 import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.factory.CartFactory;
 import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.mapper.CartDetailMapper;
@@ -70,6 +68,32 @@ public class CartEntityRepositoryImplTest {
 
         assertFalse(result);
         verify(jpaRepository).existsById(cartId);
+    }
+
+    @Test
+    void shouldReturnNull_whenCart_IsNotFound() {
+        when(jpaRepository.findById(cartId)).thenReturn(Optional.empty());
+
+        Cart result = repository.findById(cartId);
+
+        assertNull(result);
+        verify(jpaRepository).findById(cartId);
+        verifyNoInteractions(cartFactory);
+    }
+
+    @Test
+    void shouldReturnCart_WhenCartExists() {
+
+        CartEntity cartEntity = new CartEntity();
+        Cart cart = mock(Cart.class);
+
+        when(jpaRepository.findById(cartId)).thenReturn(Optional.of(cartEntity));
+        when(cartFactory.toDomain(cartEntity)).thenReturn(cart);
+
+        Cart result = repository.findById(cartId);
+        assertNotNull(result);
+        assertEquals(cart, result);
+        verify(jpaRepository).findById(cartId);
     }
 
     @Test
