@@ -10,7 +10,7 @@ class CartCalculatorTest {
 
 
     @Test
-    void InstanceCreation() throws Exception {
+    void InstanceCreation() {
         CartCalculator cartCalculator = new CartCalculator();
         assertNotNull(cartCalculator);
     }
@@ -25,7 +25,7 @@ class CartCalculatorTest {
     }
 
     @Test
-    void applyTax_fail_price_null() throws Exception {
+    void applyTax_fail_price_null() {
         double tax = 0.21;
         assertThrows(Exception.class, () -> {
             CartCalculator.applyTax(null, tax);
@@ -33,14 +33,14 @@ class CartCalculatorTest {
     }
 
     @Test
-    void applyTax_fail_tax_null() throws Exception {
+    void applyTax_fail_tax_null() {
         BigDecimal price = new BigDecimal( "10.5");
         assertThrows(Exception.class, () -> {
             CartCalculator.applyTax(price, null);
         });
     }
     @Test
-    void applyTax_fail_tax_negative() throws Exception {
+    void applyTax_fail_tax_negative() {
         BigDecimal price = new BigDecimal( "10.5");
         double tax = -0.21;
         assertThrows(Exception.class, () -> {
@@ -49,7 +49,7 @@ class CartCalculatorTest {
     }
 
     @Test
-    void applyTax_fail_tax_more_than_one() throws Exception {
+    void applyTax_fail_tax_more_than_one() {
         BigDecimal price = new BigDecimal( "10.5");
         double tax = 1.21;
         assertThrows(Exception.class, () -> {
@@ -57,7 +57,7 @@ class CartCalculatorTest {
         });
     }
     @Test
-    void applyTax_fail_price_negative() throws Exception {
+    void applyTax_fail_price_negative() {
         BigDecimal price = new BigDecimal( "-10.5");
         double tax = 0.21;
         assertThrows(Exception.class, () -> {
