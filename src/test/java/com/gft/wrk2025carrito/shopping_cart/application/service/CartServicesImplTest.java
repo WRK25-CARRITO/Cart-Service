@@ -99,6 +99,31 @@ class CartServicesImplTest {
         verify(repository).save(any());
     }
 
+    @Test
+    void should_throwException_onUpdate_whenCartDTOIsNull() {
+
+        Long productId = 1L;
+        Map<Long, Integer> productData = Map.of(productId, 3);
+
+        CartUpdateDTO dto = new CartUpdateDTO(null, productData);
+
+        assertThrows(IllegalArgumentException.class, () -> cartService.update(dto));
+        verifyNoInteractions(repository);
+
+    }
+
+    @Test
+    void should_throwException_onUpdate_whenCartDTO_doesNotExist() {
+
+        Long productId = 1L;
+        Map<Long, Integer> productData = Map.of(productId, 3);
+
+        CartUpdateDTO dto = new CartUpdateDTO(UUID.randomUUID(), productData);
+
+        assertFalse(repository.existsById(UUID.randomUUID()));
+        assertThrows(IllegalArgumentException.class, () -> cartService.update(dto));
+
+    }
 
 
     @Test

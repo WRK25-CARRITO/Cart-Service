@@ -206,6 +206,24 @@ class CartTest {
     }
 
     @Test
+    void create_cart_fail_onCreatedAt_isNull() {
+        assertThrows(IllegalArgumentException.class, () ->
+                Cart.build(
+                        cartId,
+                        userId,
+                        null,
+                        null,
+                        BigDecimal.TEN,
+                        100.0,
+                        null,
+                        now,
+                        cartDetails,
+                        CartState.ACTIVE,
+                        new ArrayList<>()
+                ));
+    }
+
+    @Test
     void create_cart_fail_paymentMethod_not_null_when_state_not_pending_or_closed() {
         assertThrows(IllegalArgumentException.class, () -> {
             Cart.build(cartId, userId, null, paymentMethod, BigDecimal.valueOf(100.0), 5.0, now, now, cartDetails, CartState.ACTIVE, promotionsId);
