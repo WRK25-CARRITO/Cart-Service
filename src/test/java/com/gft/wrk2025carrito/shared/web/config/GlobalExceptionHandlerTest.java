@@ -33,21 +33,6 @@ class GlobalExceptionHandlerTest {
         assertTrue(response.getBody().get("message").toString().contains("Not found"));
     }
 
-//    @Test
-//    void handleGeneric_returnsInternalServerError() {
-//        Exception ex = new Exception("Something went wrong");
-//        var response = handler.handleGeneric(ex);
-//        assertEquals(500, response.getStatusCode().value());
-//        assertTrue(response.getBody().get("message").toString().contains("Something went wrong"));
-//    }
-//
-//    @Test
-//    void buildBody_whenMessageIsNull_setsDefaultMessage() {
-//        var response = handler.handleGeneric(new Exception());
-//        assertNotNull(response.getBody());
-//        assertEquals("Unexpected error", response.getBody().get("message"));
-//    }
-
     @Test
     void handleHttpMessageNotReadable_returnsBadRequest() {
         var request = new ServletWebRequest(new MockHttpServletRequest());

@@ -4,7 +4,6 @@ import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.CartState;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
