@@ -105,6 +105,7 @@ class CartServicesImplTest {
         Long productId = 1L;
         Map<Long, Integer> productData = Map.of(productId, 3);
 
+
         CartUpdateDTO dto = new CartUpdateDTO(null, productData);
 
         assertThrows(IllegalArgumentException.class, () -> cartService.update(dto));
