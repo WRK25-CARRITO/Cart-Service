@@ -10,14 +10,12 @@ import com.gft.wrk2025carrito.shopping_cart.domain.services.CartServices;
 import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.factory.CartFactory;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.logging.Log;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
 import java.math.BigDecimal;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 @Service
