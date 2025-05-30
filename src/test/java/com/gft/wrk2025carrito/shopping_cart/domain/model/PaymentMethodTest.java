@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class PaymentMethodTest {
 
     @Test
-    void create_paymentMethod_ok() {
+    void createPaymentMethod_ok() {
 
         PaymentMethodId paymentMethodId = new PaymentMethodId();
         String paymentMethodName = "Test";
@@ -24,7 +24,7 @@ class PaymentMethodTest {
     }
 
     @Test
-    void create_paymentMethod_fail_paymentMethodId_null() {
+    void createPaymentMethod_fail_paymentMethodId_null() {
 
         String paymentMethodName = "";
         double charge = 0.5;
@@ -35,7 +35,7 @@ class PaymentMethodTest {
     }
 
     @Test
-    void create_paymentMethod_fail_name_empty() {
+    void createPaymentMethod_fail_name_empty() {
 
         PaymentMethodId paymentMethodId = new PaymentMethodId();
         String paymentMethodName = "";
@@ -47,7 +47,7 @@ class PaymentMethodTest {
     }
 
     @Test
-    void create_paymentMethod_fail_name_null() {
+    void createPaymentMethod_fail_name_null() {
 
         PaymentMethodId paymentMethodId = new PaymentMethodId();
         String paymentMethodName = null;
@@ -59,7 +59,7 @@ class PaymentMethodTest {
     }
 
     @Test
-    void create_paymentMethod_fail_charge_negative() {
+    void createPaymentMethod_fail_charge_negative() {
 
         PaymentMethodId paymentMethodId = new PaymentMethodId();
         String paymentMethodName = "Test";
@@ -71,7 +71,7 @@ class PaymentMethodTest {
     }
 
     @Test
-    void create_paymentMethod_fail_charge_more_than_one() {
+    void createPaymentMethod_fail_charge_more_than_one() {
 
         PaymentMethodId paymentMethodId = new PaymentMethodId();
         String paymentMethodName = "Test";

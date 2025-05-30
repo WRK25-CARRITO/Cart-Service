@@ -1,8 +1,10 @@
 package com.gft.wrk2025carrito.shopping_cart.application.service;
 
+import com.gft.wrk2025carrito.shopping_cart.application.dto.CartUpdateDTO;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.Cart;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.CartId;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.CartState;
+import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.factory.CartFactory;
 import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.repository.impl.CartEntityRepositoryImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,6 +16,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -23,6 +26,9 @@ class CartServicesImplTest {
 
     @Mock
     private CartEntityRepositoryImpl repository;
+
+    @Mock
+    private CartFactory cartFactory;
 
     @InjectMocks
     private CartServicesImpl cartService;
@@ -74,6 +80,50 @@ class CartServicesImplTest {
         verify(repository, times(1)).deleteAllByUserId(id);
     }
 
+    @Test
+    void should_updateCart_whenExists() {
+        UUID cartId = UUID.randomUUID();
+        Long productId = 1L;
+        Map<Long, Integer> productData = Map.of(productId, 3);
+
+        CartUpdateDTO dto = new CartUpdateDTO(cartId, productData);
+        Cart existingCart = mock(Cart.class);
+
+        when(repository.existsById(cartId)).thenReturn(true);
+        when(repository.findById(cartId)).thenReturn(existingCart);
+        when(repository.save(any())).thenReturn(existingCart);
+
+        cartService.update(dto);
+
+        verify(existingCart).setCartDetails(any());
+        verify(repository).save(any());
+    }
+
+    @Test
+    void should_throwException_onUpdate_whenCartDTOIsNull() {
+
+        Long productId = 1L;
+        Map<Long, Integer> productData = Map.of(productId, 3);
+
+        CartUpdateDTO dto = new CartUpdateDTO(null, productData);
+
+        assertThrows(IllegalArgumentException.class, () -> cartService.update(dto));
+        verifyNoInteractions(repository);
+
+    }
+
+    @Test
+    void should_throwException_onUpdate_whenCartDTO_doesNotExist() {
+
+        Long productId = 1L;
+        Map<Long, Integer> productData = Map.of(productId, 3);
+
+        CartUpdateDTO dto = new CartUpdateDTO(UUID.randomUUID(), productData);
+
+        assertFalse(repository.existsById(UUID.randomUUID()));
+        assertThrows(IllegalArgumentException.class, () -> cartService.update(dto));
+
+    }
 
 
     @Test

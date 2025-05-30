@@ -53,6 +53,13 @@ public class Cart {
             }
         }
 
+        if(createdAt == null) {
+            throw new IllegalArgumentException("Cart createdAt date cannot be null");
+        }
+
+        if(updatedAt == null && state == CartState.CLOSED) {
+            throw new IllegalArgumentException("Cart updatedAt date cannot be null when cart state is CLOSED");
+        }
 
         return new Cart(id, userId,  countryTax, paymentMethod, totalPrice, totalWeight,  createdAt, updatedAt, cartDetails, state, idPromotion);
     }

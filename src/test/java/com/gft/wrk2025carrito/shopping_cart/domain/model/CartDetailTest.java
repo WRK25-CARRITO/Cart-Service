@@ -13,7 +13,7 @@ class CartDetailTest {
     Random random = new Random();
 
     @Test
-    void create_CartDetail_ok() {
+    void should_OK_create_CartDetail() {
         Long productId = random.nextLong();
         int quantity = 3;
         double price = 1.5;
@@ -27,7 +27,7 @@ class CartDetailTest {
     }
 
     @Test
-    void create_CartDetail_negative_quantity() {
+    void shouldThrow_onCreate_CartDetail_negative_quantity() {
         Long productId = random.nextLong();
         int quantity = -3;
         double price = 1.5;
@@ -39,7 +39,7 @@ class CartDetailTest {
     }
 
     @Test
-    void create_CartDetail_fail_productId_null() {
+    void shouldThrow_onCreate_CartDetail_fail_productId_null() {
         int quantity = 3;
         double price = 1.5;
         double weight = 20.5;
@@ -50,7 +50,7 @@ class CartDetailTest {
     }
 
     @Test
-    void create_CartDetail_negative_price() {
+    void shouldThrow_onCreate_CartDetail_negative_price() {
         Long productId = random.nextLong();
         int quantity = 3;
         double price = -1.5;
@@ -62,7 +62,7 @@ class CartDetailTest {
     }
 
     @Test
-    void create_CartDetail_negative_weight() {
+    void shouldThrow_onCreate_CartDetail_negative_weight() {
         Long productId = random.nextLong();
         int quantity = 3;
         double price = 1.5;

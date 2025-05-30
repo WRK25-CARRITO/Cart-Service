@@ -1,5 +1,7 @@
 package com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.repository.impl.it;
 
+import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.Cart;
+import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.entity.CartEntity;
 import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.factory.CartFactory;
 import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.mapper.CartDetailMapper;
 import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.mapper.CountryTaxMapper;
@@ -11,10 +13,10 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.util.List;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
 @Import({
@@ -64,10 +66,21 @@ class CartEntityRepositoryImpIT {
     void findByUserId_WhenCartsExist_ReturnsList() {
         UUID userId = UUID.fromString("b96124a9-69a6-4859-acc7-5708ab07cd80");
 
-        var result = cartEntityRepository.findByUserId(userId);
+        List<Cart> result = cartEntityRepository.findByUserId(userId);
 
         assertFalse(result.isEmpty(), "Expected carts to be found for user ID");
     }
+
+    @Test
+    void findById_WhenCartsExist() {
+        UUID cartId = UUID.fromString("4d82b684-7131-4ba4-864d-465fc290708b");
+
+        Cart result = cartEntityRepository.findById(cartId);
+
+        assertNotNull(result);
+    }
+
+
 
     @Test
     void deleteByUserId_WhenCartsExist_RemovesCarts() {

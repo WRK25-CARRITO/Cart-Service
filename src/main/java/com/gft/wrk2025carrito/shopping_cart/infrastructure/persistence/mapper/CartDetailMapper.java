@@ -14,8 +14,6 @@ public class CartDetailMapper {
         return CartDetailEntity.builder()
                 .productId(cartDetailDomain.getProductId())
                 .quantity(cartDetailDomain.getQuantity())
-                .totalPrice(cartDetailDomain.getTotalPrice())
-                .totalWeight(cartDetailDomain.getTotalWeight())
                 .build();
     }
 
@@ -23,11 +21,11 @@ public class CartDetailMapper {
 
         if(cartDetailEntity == null) return null;
 
-        return CartDetail.build(
+        return CartDetail. build(
                 cartDetailEntity.getProductId(),
                 cartDetailEntity.getQuantity(),
-                cartDetailEntity.getTotalPrice(),
-                cartDetailEntity.getTotalWeight()
+                null,
+                null
                 );
     }
 
