@@ -26,6 +26,27 @@ public class CartServicesImpl implements CartServices {
 
     @Override
     @Transactional
+    public List<Cart> getAll(){
+        return cartRepository.findAll();
+    }
+
+    @Override
+    @Transactional
+    public Cart getById(UUID id) {
+        if(id == null) {
+            throw new IllegalArgumentException("Id cannot be null");
+        }
+
+        if(!cartRepository.existsById(id)) {
+            throw new IllegalArgumentException("Cart with id " + id + " does not exist");
+        }
+
+        return cartRepository.findById(id);
+
+    }
+
+    @Override
+    @Transactional
     public void delete(UUID id) {
         if (id == null) throw new IllegalArgumentException("Cart ID must not be null");
 

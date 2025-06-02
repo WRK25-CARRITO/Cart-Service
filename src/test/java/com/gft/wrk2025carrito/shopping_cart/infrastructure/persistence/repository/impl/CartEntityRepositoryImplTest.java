@@ -43,6 +43,13 @@ public class CartEntityRepositoryImplTest {
     private final UUID userId = UUID.randomUUID();
     private final UUID cartId = UUID.randomUUID();
 
+
+    @Test
+    void should_getAllCarts(){
+        repository.findAll();
+        verify(jpaRepository).findAll();
+    }
+
     @Test
     void should_DeleteById() {
         repository.deleteById(cartId);

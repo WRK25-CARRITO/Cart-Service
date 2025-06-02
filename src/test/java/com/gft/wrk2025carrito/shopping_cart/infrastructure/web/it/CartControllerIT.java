@@ -1,6 +1,5 @@
 package com.gft.wrk2025carrito.shopping_cart.infrastructure.web.it;
 
-import com.gft.wrk2025carrito.shopping_cart.application.dto.CartUpdateDTO;
 import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.repository.CartEntityJpaRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -12,7 +11,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.Map;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -42,6 +40,21 @@ public class CartControllerIT {
         existingUserId = UUID.fromString("b96124a9-69a6-4859-acc7-5708ab07cd80");
         assertFalse(cartRepository.findByUserId(existingUserId).isEmpty());
         assertTrue(cartRepository.existsById(existingCartId));
+    }
+
+    @Test
+    void should_Return204_whenGettingAllCarts() throws Exception {
+        mockMvc.perform(get("/carts")).andExpect(status().isOk());
+
+        assertFalse(cartRepository.findAll().isEmpty());
+    }
+
+    @Test
+    void should_Return204_whenGettingCartById() throws Exception {
+        existingCartId = UUID.fromString("4d82b684-7131-4ba4-864d-465fc290708b");
+        mockMvc.perform(get("/carts/" + existingCartId)).andExpect(status().isOk());
+
+        assertTrue(cartRepository.findById(existingCartId).isPresent());
     }
 
     @Test
