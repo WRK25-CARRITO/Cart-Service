@@ -1,6 +1,5 @@
 package com.gft.wrk2025carrito.shopping_cart.application.service;
 
-import com.gft.wrk2025carrito.shopping_cart.application.dto.CartUpdateDTO;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.Cart;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.CartId;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.CartState;
@@ -132,14 +131,12 @@ class CartServicesImplTest {
         Long productId = 1L;
         Map<Long, Integer> productData = Map.of(productId, 3);
 
-        CartUpdateDTO dto = new CartUpdateDTO(cartId, productData);
         Cart existingCart = mock(Cart.class);
 
         when(repository.existsById(cartId)).thenReturn(true);
         when(repository.findById(cartId)).thenReturn(existingCart);
         when(repository.save(any())).thenReturn(existingCart);
 
-        // Mock respuesta de API externa
         Object[] fakeProductResponse = new Object[]{ new Object() };
         when(restTemplate.exchange(
                 anyString(),
@@ -148,7 +145,7 @@ class CartServicesImplTest {
                 eq(Object[].class))
         ).thenReturn(new ResponseEntity<>(fakeProductResponse, HttpStatus.OK));
 
-        cartService.update(dto);
+        cartService.update(cartId, productData);
 
         verify(existingCart).setCartDetails(any());
         verify(repository).save(any());
@@ -160,14 +157,12 @@ class CartServicesImplTest {
         Long productId = 1L;
         Map<Long, Integer> productData = Map.of(productId, 3);
 
-        CartUpdateDTO dto = new CartUpdateDTO(cartId, productData);
-
         Cart cart = mock(Cart.class);
-        when(cart.getState()).thenReturn(CartState.PENDING); // o CartState.CLOSED
+        when(cart.getState()).thenReturn(CartState.PENDING);
         when(repository.existsById(cartId)).thenReturn(true);
         when(repository.findById(cartId)).thenReturn(cart);
 
-        assertThrows(IllegalArgumentException.class, () -> cartService.update(dto));
+        assertThrows(IllegalArgumentException.class, () -> cartService.update(cartId, productData));
     }
 
     @Test
@@ -176,17 +171,15 @@ class CartServicesImplTest {
         Long productId = 1L;
         Map<Long, Integer> productData = Map.of(productId, 3);
 
-        CartUpdateDTO dto = new CartUpdateDTO(cartId, productData);
         Cart cart = mock(Cart.class);
         when(cart.getState()).thenReturn(CartState.ACTIVE);
         when(repository.existsById(cartId)).thenReturn(true);
         when(repository.findById(cartId)).thenReturn(cart);
 
-        // API devuelve lista vacía (no corresponde con los IDs)
         when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(Object[].class)))
                 .thenReturn(new ResponseEntity<>(new Object[0], HttpStatus.OK));
 
-        assertThrows(IllegalArgumentException.class, () -> cartService.update(dto));
+        assertThrows(IllegalArgumentException.class, () -> cartService.update(cartId, productData));
     }
 
     @Test
@@ -194,7 +187,7 @@ class CartServicesImplTest {
         UUID cartId = UUID.randomUUID();
         Long productId = 1L;
         Map<Long, Integer> productData = Map.of(productId, 3);
-        CartUpdateDTO dto = new CartUpdateDTO(cartId, productData);
+
         Cart cart = mock(Cart.class);
         when(cart.getState()).thenReturn(CartState.ACTIVE);
         when(repository.existsById(cartId)).thenReturn(true);
@@ -203,7 +196,7 @@ class CartServicesImplTest {
         when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(Object[].class)))
                 .thenReturn(new ResponseEntity<>(null, HttpStatus.OK));
 
-        assertThrows(IllegalArgumentException.class, () -> cartService.update(dto));
+        assertThrows(IllegalArgumentException.class, () -> cartService.update(cartId, productData));
     }
 
     @Test
@@ -212,41 +205,32 @@ class CartServicesImplTest {
         Long productId = 1L;
         Map<Long, Integer> productData = Map.of(productId, 3);
 
-        CartUpdateDTO dto = new CartUpdateDTO(cartId, productData);
-
         Cart cart = mock(Cart.class);
         when(cart.getState()).thenReturn(CartState.CLOSED);
         when(repository.existsById(cartId)).thenReturn(true);
         when(repository.findById(cartId)).thenReturn(cart);
 
-        assertThrows(IllegalArgumentException.class, () -> cartService.update(dto));
+        assertThrows(IllegalArgumentException.class, () -> cartService.update(cartId, productData));
     }
 
     @Test
-    void should_throwException_onUpdate_whenCartDTOIsNull() {
-
+    void should_throwException_onUpdate_whenCartIdIsNull() {
         Long productId = 1L;
         Map<Long, Integer> productData = Map.of(productId, 3);
 
-
-        CartUpdateDTO dto = new CartUpdateDTO(null, productData);
-
-        assertThrows(IllegalArgumentException.class, () -> cartService.update(dto));
+        assertThrows(IllegalArgumentException.class, () -> cartService.update(null, productData));
         verifyNoInteractions(repository);
-
     }
 
     @Test
-    void should_throwException_onUpdate_whenCartDTO_doesNotExist() {
-
+    void should_throwException_onUpdate_whenCart_doesNotExist() {
+        UUID cartId = UUID.randomUUID();
         Long productId = 1L;
         Map<Long, Integer> productData = Map.of(productId, 3);
 
-        CartUpdateDTO dto = new CartUpdateDTO(UUID.randomUUID(), productData);
+        when(repository.existsById(cartId)).thenReturn(false);
 
-        assertFalse(repository.existsById(UUID.randomUUID()));
-        assertThrows(IllegalArgumentException.class, () -> cartService.update(dto));
-
+        assertThrows(IllegalArgumentException.class, () -> cartService.update(cartId, productData));
     }
 
     @Test
