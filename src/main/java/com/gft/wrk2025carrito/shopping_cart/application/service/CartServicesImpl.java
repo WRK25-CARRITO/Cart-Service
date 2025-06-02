@@ -1,6 +1,5 @@
 package com.gft.wrk2025carrito.shopping_cart.application.service;
 
-import com.gft.wrk2025carrito.shopping_cart.application.dto.CartUpdateDTO;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.Cart;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cartDetail.CartDetail;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.CartId;
@@ -59,23 +58,24 @@ public class CartServicesImpl implements CartServices {
 
     @Override
     @Transactional
-    public void update(CartUpdateDTO cartDTO) {
+    public void update(UUID cartId, Map<Long, Integer> cartProducts) {
         String url = "https://workshop-7uvd.onrender.com/api/v1/products/list-by-ids";
 
-        if (cartDTO.cartId() == null) {
+        if (cartId == null) {
             throw new IllegalArgumentException("Cart id cannot be null");
         }
 
-        if (!cartRepository.existsById(cartDTO.cartId())) {
-            throw new IllegalArgumentException("Cart with id " + cartDTO.cartId() + " does not exist");
+        if (!cartRepository.existsById(cartId)) {
+            throw new IllegalArgumentException("Cart with id " + cartId + " does not exist");
         }
 
-        if(cartRepository.findById(cartDTO.cartId()).getState() == CartState.PENDING || cartRepository.findById(cartDTO.cartId()).getState() == CartState.CLOSED) {
-            throw new IllegalArgumentException("Cart with id " + cartDTO.cartId() + " cannot be updated");
+        Cart cart = cartRepository.findById(cartId);
+        if (cart.getState() == CartState.PENDING || cart.getState() == CartState.CLOSED) {
+            throw new IllegalArgumentException("Cart with id " + cartId + " cannot be updated");
         }
 
-        // eliminar duplicados y sumar cantidad
-        Map<Long, Integer> productQuantities = cartDTO.productData().entrySet().stream()
+        // Eliminar duplicados y sumar cantidades
+        Map<Long, Integer> productQuantities = cartProducts.entrySet().stream()
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
                         Map.Entry::getValue,
@@ -88,9 +88,6 @@ public class CartServicesImpl implements CartServices {
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<List<Long>> request = new HttpEntity<>(productIds, headers);
 
-        System.out.println("Request enviada ");
-
-        // llamada a la API de productos
         ResponseEntity<Object[]> response = restTemplate.exchange(
                 url,
                 HttpMethod.POST,
@@ -99,18 +96,14 @@ public class CartServicesImpl implements CartServices {
         );
 
         Object[] productos = response.getBody();
-
-        System.out.println("Request terminada ");
-
         if (productos == null || productos.length != productIds.size()) {
             throw new IllegalArgumentException("One or more product IDs are invalid");
         }
 
-        List<CartDetail> newCartDetails = cartDTO.productData().entrySet().stream()
+        List<CartDetail> newCartDetails = productQuantities.entrySet().stream()
                 .map(entry -> CartDetail.build(entry.getKey(), entry.getValue(), BigDecimal.ZERO, 0.0))
                 .toList();
 
-        Cart cart = cartRepository.findById(cartDTO.cartId());
         cart.setCartDetails(newCartDetails);
         cartRepository.save(cartFactory.toEntity(cart));
     }

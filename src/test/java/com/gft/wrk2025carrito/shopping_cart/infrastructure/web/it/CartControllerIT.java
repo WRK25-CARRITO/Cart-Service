@@ -1,7 +1,6 @@
 package com.gft.wrk2025carrito.shopping_cart.infrastructure.web.it;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.gft.wrk2025carrito.shopping_cart.application.dto.CartUpdateDTO;
 import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.repository.CartEntityJpaRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -137,11 +136,10 @@ public class CartControllerIT {
     @Test
     void should_Return400_WhenUpdatingCartWithInvalidProductIds() throws Exception {
         Map<Long, Integer> invalidProducts = Map.of(999L, 1);
-        CartUpdateDTO dto = new CartUpdateDTO(existingCartId, invalidProducts);
 
-        String json = objectMapper.writeValueAsString(dto);
+        String json = objectMapper.writeValueAsString(invalidProducts);
 
-        mockMvc.perform(put("/carts")
+        mockMvc.perform(put("/carts/{id}", existingCartId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
                 .andExpect(status().isBadRequest());
@@ -150,25 +148,25 @@ public class CartControllerIT {
     @Test
     void should_Return400_WhenProductIdsAreInvalid() throws Exception {
         Map<Long, Integer> invalidProducts = Map.of(99999L, 1); // ID no válido
-        CartUpdateDTO dto = new CartUpdateDTO(existingCartId, invalidProducts);
 
-        String json = objectMapper.writeValueAsString(dto);
+        String json = objectMapper.writeValueAsString(invalidProducts);
 
-        mockMvc.perform(put("/carts")
+        mockMvc.perform(put("/carts/{id}", existingCartId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
-    void should_Return400_WhenCartIdIsNull() throws Exception {
-        CartUpdateDTO dto = new CartUpdateDTO(null, Map.of(1L, 1));
+    void should_Return400_WhenCartIdIsInvalid() throws Exception {
+        Map<Long, Integer> validProducts = Map.of(1L, 1); // productos válidos
 
-        String json = objectMapper.writeValueAsString(dto);
+        String json = objectMapper.writeValueAsString(validProducts);
 
-        mockMvc.perform(put("/carts")
+        mockMvc.perform(put("/carts/{id}", "invalid-uuid")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
                 .andExpect(status().isBadRequest());
     }
+
 }

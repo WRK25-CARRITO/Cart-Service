@@ -15,7 +15,6 @@ public class CartDetail {
     private BigDecimal totalPrice;
     private Double totalWeight;
 
-
     public static CartDetail build(Long productId, int quantity, BigDecimal totalPrice, Double totalWeight) {
 
         if(productId == null){

@@ -1,6 +1,5 @@
 package com.gft.wrk2025carrito.shopping_cart.infrastructure.web;
 
-import com.gft.wrk2025carrito.shopping_cart.application.dto.CartUpdateDTO;
 import com.gft.wrk2025carrito.shopping_cart.domain.services.CartServices;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -8,6 +7,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Map;
 import java.util.UUID;
 
 import static org.mockito.Mockito.*;
@@ -29,40 +29,32 @@ class CartControllerTest {
 
     @Test
     void getCartById_ok() {
-
         UUID id = UUID.randomUUID();
-
         controller.getById(id);
-
         verify(cartServices, atLeastOnce()).getById(id);
     }
-
 
     @Test
     void should_DeleteCartById_Successfully() {
         UUID id = UUID.randomUUID();
-
         controller.delete(id);
-
         verify(cartServices).delete(id);
     }
 
     @Test
     void should_DeleteCartByUserId_Successfully() {
         UUID userId = UUID.randomUUID();
-
         controller.deleteByUser(userId);
-
         verify(cartServices).deleteAllByUserId(userId);
     }
 
     @Test
     void should_UpdateCart_Successfully() {
-        CartUpdateDTO dto = mock(CartUpdateDTO.class);
-        controller.update(dto);
-        verify(cartServices).update(dto);
+        UUID cartId = UUID.randomUUID();
+        Map<Long, Integer> cartProducts = Map.of(1L, 2, 2L, 3);
+        controller.update(cartId, cartProducts);
+        verify(cartServices).update(cartId, cartProducts);
     }
-
 
     @Test
     void should_CreateCart_Successfully() {
