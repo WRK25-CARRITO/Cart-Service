@@ -3,8 +3,7 @@ package com.gft.wrk2025carrito.shopping_cart.domain.services;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.Cart;
 
 import java.util.List;
-import com.gft.wrk2025carrito.shopping_cart.application.dto.CartUpdateDTO;
-
+import java.util.Map;
 import java.util.UUID;
 
 public interface CartServices {
@@ -21,7 +20,7 @@ public interface CartServices {
      */
     void deleteAllByUserId(UUID id);
 
-    void update(CartUpdateDTO cartDTO);
+    void update(UUID cartId, Map<Long, Integer> cartProducts);
 
     Cart createCart(UUID cart);
 
