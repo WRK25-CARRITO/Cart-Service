@@ -42,6 +42,44 @@ class CartServicesImplTest {
     private CartServicesImpl cartService;
 
     @Test
+    void getAllCarts_ok() {
+        when(repository.findAll()).thenReturn(Collections.emptyList());
+
+        List<Cart> result = cartService.getAll();
+
+        assertNotNull(result);
+        verify(repository).findAll();
+    }
+
+    @Test
+    void getCartById_ok() {
+        UUID id = UUID.randomUUID();
+        Cart mockCart = mock(Cart.class);
+
+        when(repository.existsById(id)).thenReturn(true);
+        when(repository.findById(id)).thenReturn(mockCart);
+
+        Cart cart = cartService.getById(id);
+
+        assertNotNull(cart);
+        assertEquals(mockCart, cart);
+    }
+
+    @Test
+    void getCartById_isNull() {
+        assertThrows(IllegalArgumentException.class, () -> cartService.getById(null));
+    }
+
+    @Test
+    void getCartById_notFound() {
+        UUID id = UUID.randomUUID();
+
+        when(repository.existsById(id)).thenReturn(false);
+
+        assertThrows(IllegalArgumentException.class, () -> cartService.getById(id));
+    }
+
+    @Test
     void should_throwException_whenIdIsNull() {
         assertThrows(IllegalArgumentException.class, () -> cartService.delete(null));
     }
@@ -210,7 +248,6 @@ class CartServicesImplTest {
         assertThrows(IllegalArgumentException.class, () -> cartService.update(dto));
 
     }
-
 
     @Test
     void shouldThrowExceptionWhenUserIdIsNull() {

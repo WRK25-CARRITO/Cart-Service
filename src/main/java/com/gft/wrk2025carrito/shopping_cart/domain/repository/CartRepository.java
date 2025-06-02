@@ -18,6 +18,8 @@ public interface CartRepository {
 
     List<Cart> findByUserId(UUID userId);
 
+    List<Cart> findAll();
+
     void deleteAllByUserId(UUID userId);
 
     boolean cartExistsByUserIdAndStateActive(UUID userId);
