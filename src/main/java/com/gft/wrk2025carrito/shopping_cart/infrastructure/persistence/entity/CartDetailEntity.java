@@ -3,8 +3,6 @@ package com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.math.BigDecimal;
-import java.util.UUID;
 
 @Getter
 @Setter
@@ -17,15 +15,9 @@ import java.util.UUID;
 public class CartDetailEntity {
 
     @Column(name = "PRODUCT_ID")
-    private UUID productId;
+    private Long productId;
 
     @Column(name = "QUANTITY", nullable = false)
     private Integer quantity;
-
-    @Column(name = "TOTAL_WEIGHT", nullable = false)
-    private double totalWeight;
-
-    @Column(name = "TOTAL_ITEM_PRICE")
-    private BigDecimal totalPrice;
 
 }

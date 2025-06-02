@@ -1,16 +1,26 @@
 package com.gft.wrk2025carrito.shopping_cart.application.service;
 
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.Cart;
+import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.CartId;
+import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.CartState;
+import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.factory.CartFactory;
 import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.repository.impl.CartEntityRepositoryImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -21,8 +31,52 @@ class CartServicesImplTest {
     @Mock
     private CartEntityRepositoryImpl repository;
 
+    @Mock
+    private CartFactory cartFactory;
+
+    @Mock
+    private RestTemplate restTemplate;
+
     @InjectMocks
     private CartServicesImpl cartService;
+
+    @Test
+    void getAllCarts_ok() {
+        when(repository.findAll()).thenReturn(Collections.emptyList());
+
+        List<Cart> result = cartService.getAll();
+
+        assertNotNull(result);
+        verify(repository).findAll();
+    }
+
+    @Test
+    void getCartById_ok() {
+        UUID id = UUID.randomUUID();
+        Cart mockCart = mock(Cart.class);
+
+        when(repository.existsById(id)).thenReturn(true);
+        when(repository.findById(id)).thenReturn(mockCart);
+
+        Cart cart = cartService.getById(id);
+
+        assertNotNull(cart);
+        assertEquals(mockCart, cart);
+    }
+
+    @Test
+    void getCartById_isNull() {
+        assertThrows(IllegalArgumentException.class, () -> cartService.getById(null));
+    }
+
+    @Test
+    void getCartById_notFound() {
+        UUID id = UUID.randomUUID();
+
+        when(repository.existsById(id)).thenReturn(false);
+
+        assertThrows(IllegalArgumentException.class, () -> cartService.getById(id));
+    }
 
     @Test
     void should_throwException_whenIdIsNull() {
@@ -69,6 +123,156 @@ class CartServicesImplTest {
         cartService.deleteAllByUserId(id);
 
         verify(repository, times(1)).deleteAllByUserId(id);
+    }
+
+    @Test
+    void should_updateCart_whenExists() {
+        UUID cartId = UUID.randomUUID();
+        Long productId = 1L;
+        Map<Long, Integer> productData = Map.of(productId, 3);
+
+        Cart existingCart = mock(Cart.class);
+
+        when(repository.existsById(cartId)).thenReturn(true);
+        when(repository.findById(cartId)).thenReturn(existingCart);
+        when(repository.save(any())).thenReturn(existingCart);
+
+        Object[] fakeProductResponse = new Object[]{ new Object() };
+        when(restTemplate.exchange(
+                anyString(),
+                eq(HttpMethod.POST),
+                any(HttpEntity.class),
+                eq(Object[].class))
+        ).thenReturn(new ResponseEntity<>(fakeProductResponse, HttpStatus.OK));
+
+        cartService.update(cartId, productData);
+
+        verify(existingCart).setCartDetails(any());
+        verify(repository).save(any());
+    }
+
+    @Test
+    void should_throwException_whenCartStateIsPendingOrClosed() {
+        UUID cartId = UUID.randomUUID();
+        Long productId = 1L;
+        Map<Long, Integer> productData = Map.of(productId, 3);
+
+        Cart cart = mock(Cart.class);
+        when(cart.getState()).thenReturn(CartState.PENDING);
+        when(repository.existsById(cartId)).thenReturn(true);
+        when(repository.findById(cartId)).thenReturn(cart);
+
+        assertThrows(IllegalArgumentException.class, () -> cartService.update(cartId, productData));
+    }
+
+    @Test
+    void should_throwException_whenProductIdsMismatch() {
+        UUID cartId = UUID.randomUUID();
+        Long productId = 1L;
+        Map<Long, Integer> productData = Map.of(productId, 3);
+
+        Cart cart = mock(Cart.class);
+        when(cart.getState()).thenReturn(CartState.ACTIVE);
+        when(repository.existsById(cartId)).thenReturn(true);
+        when(repository.findById(cartId)).thenReturn(cart);
+
+        when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(Object[].class)))
+                .thenReturn(new ResponseEntity<>(new Object[0], HttpStatus.OK));
+
+        assertThrows(IllegalArgumentException.class, () -> cartService.update(cartId, productData));
+    }
+
+    @Test
+    void should_throwException_whenProductResponseIsNull() {
+        UUID cartId = UUID.randomUUID();
+        Long productId = 1L;
+        Map<Long, Integer> productData = Map.of(productId, 3);
+
+        Cart cart = mock(Cart.class);
+        when(cart.getState()).thenReturn(CartState.ACTIVE);
+        when(repository.existsById(cartId)).thenReturn(true);
+        when(repository.findById(cartId)).thenReturn(cart);
+
+        when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(Object[].class)))
+                .thenReturn(new ResponseEntity<>(null, HttpStatus.OK));
+
+        assertThrows(IllegalArgumentException.class, () -> cartService.update(cartId, productData));
+    }
+
+    @Test
+    void should_throwException_whenCartStateIsClosed() {
+        UUID cartId = UUID.randomUUID();
+        Long productId = 1L;
+        Map<Long, Integer> productData = Map.of(productId, 3);
+
+        Cart cart = mock(Cart.class);
+        when(cart.getState()).thenReturn(CartState.CLOSED);
+        when(repository.existsById(cartId)).thenReturn(true);
+        when(repository.findById(cartId)).thenReturn(cart);
+
+        assertThrows(IllegalArgumentException.class, () -> cartService.update(cartId, productData));
+    }
+
+    @Test
+    void should_throwException_onUpdate_whenCartIdIsNull() {
+        Long productId = 1L;
+        Map<Long, Integer> productData = Map.of(productId, 3);
+
+        assertThrows(IllegalArgumentException.class, () -> cartService.update(null, productData));
+        verifyNoInteractions(repository);
+    }
+
+    @Test
+    void should_throwException_onUpdate_whenCart_doesNotExist() {
+        UUID cartId = UUID.randomUUID();
+        Long productId = 1L;
+        Map<Long, Integer> productData = Map.of(productId, 3);
+
+        when(repository.existsById(cartId)).thenReturn(false);
+
+        assertThrows(IllegalArgumentException.class, () -> cartService.update(cartId, productData));
+    }
+
+    @Test
+    void shouldThrowExceptionWhenUserIdIsNull() {
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            cartService.createCart(null);
+        });
+        assertEquals("User ID must not be null", exception.getMessage());
+    }
+
+    @Test
+    void shouldThrowExceptionIfActiveCartExists() {
+        UUID userId = UUID.randomUUID();
+        when(repository.cartExistsByUserIdAndStateActive(userId)).thenReturn(true);
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            cartService.createCart(userId);
+        });
+        assertEquals(" An active cart already exists for user", exception.getMessage());
+    }
+
+    @Test
+    void shouldCreateCartIfNoneExists() {
+        UUID userId = UUID.randomUUID();
+        when(repository.cartExistsByUserIdAndStateActive(userId)).thenReturn(false);
+
+        Cart expectedCart = Cart.build(
+                new CartId(), userId, null, null, null, null,
+                new Date(), null,
+                java.util.Collections.emptyList(),
+                CartState.ACTIVE,
+                java.util.Collections.emptyList()
+        );
+
+        when(repository.create(any(Cart.class))).thenReturn(expectedCart);
+
+        Cart result = cartService.createCart(userId);
+
+        assertNotNull(result);
+        assertEquals(userId, result.getUserId());
+        assertEquals(CartState.ACTIVE, result.getState());
+        verify(repository).create(any(Cart.class));
     }
 
 }

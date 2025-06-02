@@ -13,7 +13,7 @@ import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.mapper.Pa
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -22,20 +22,22 @@ public class CartFactory {
 
     private final CountryTaxMapper countryTaxMapper;
     private final PaymentMethodMapper paymentMethodMapper;
+    private final CartDetailMapper cartDetailMapper;
 
     public Cart toDomain(CartEntity cartEntity) {
 
         List<CartDetail> cartDetails = cartEntity.getCartDetails() != null
-                ? cartEntity.getCartDetails().stream().map(CartDetailMapper::toDomain).toList()
-                : Collections.emptyList();
+                ? new ArrayList<>(cartEntity.getCartDetails().stream().map(cartDetailMapper::toDomain).toList())
+                : new ArrayList<>();
+
 
         return Cart.build(
                 new CartId(cartEntity.getId()),
                 cartEntity.getUserId(),
                 countryTaxMapper.toDomain(cartEntity.getCountryTax()),
                 paymentMethodMapper.toDomain(cartEntity.getPaymentMethod()),
-                cartEntity.getTotalPrice(),
-                cartEntity.getTotalWeight(),
+                null,
+                null,
                 cartEntity.getCreatedAt(),
                 cartEntity.getUpdatedAt(),
                 cartDetails,
@@ -46,7 +48,7 @@ public class CartFactory {
 
     public CartEntity toEntity(Cart cart) {
 
-        List<CartDetailEntity> cartDetails =cart.getCartDetails().stream().map(CartDetailMapper::toEntity).toList();
+        List<CartDetailEntity> cartDetails =cart.getCartDetails().stream().map(cartDetailMapper::toEntity).toList();
 
         CountryTaxEntity countryTaxEntity = countryTaxMapper.toEntity(cart.getCountryTax());
         PaymentMethodEntity paymentMethodEntity = paymentMethodMapper.toEntity(cart.getPaymentMethod());
@@ -56,8 +58,8 @@ public class CartFactory {
                 .userId(cart.getUserId())
                 .countryTax(countryTaxEntity)
                 .paymentMethod(paymentMethodEntity)
-                .totalPrice(cart.getTotalPrice())
-                .totalWeight(cart.getTotalWeight())
+                .createdAt(cart.getCreatedAt())
+                .updatedAt(cart.getUpdatedAt())
                 .cartDetails(cartDetails)
                 .state(cart.getState())
                 .promotionIds(cart.getPromotionIds())

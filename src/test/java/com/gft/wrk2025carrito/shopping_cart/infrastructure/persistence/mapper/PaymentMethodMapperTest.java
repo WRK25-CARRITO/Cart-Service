@@ -25,14 +25,14 @@ class PaymentMethodMapperTest {
         assertEquals(domain.getPaymentMethod(), result.getPaymentMethod());
         assertEquals(domain.getCharge(), result.getCharge());
     }
-
+    
     @Test
-    void toEntity_should_return_null_if_input_is_null() {
+    void should_ReturnNull_toEntity_ifInput_isNull() {
         assertNull(paymentMethodMapper.toEntity(null));
     }
 
     @Test
-    void toDomain_should_return_null_if_input_is_null() {
+    void should_ReturnNull_toDomain_ifInput_isNull() {
         assertNull(paymentMethodMapper.toDomain(null));
     }
 

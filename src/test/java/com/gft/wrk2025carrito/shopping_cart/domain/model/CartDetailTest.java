@@ -3,18 +3,18 @@ package com.gft.wrk2025carrito.shopping_cart.domain.model;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.CartId;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cartDetail.CartDetail;
 import org.junit.jupiter.api.Test;
-
+import java.util.Random;
 import java.math.BigDecimal;
-import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class CartDetailTest {
 
+    Random random = new Random();
+
     @Test
-    void create_CartDetail_ok() {
-        UUID productId = UUID.randomUUID();
-        CartId cartId = new CartId();
+    void should_OK_create_CartDetail() {
+        Long productId = random.nextLong();
         int quantity = 3;
         double price = 1.5;
         double weight = 20.5;
@@ -27,9 +27,8 @@ class CartDetailTest {
     }
 
     @Test
-    void create_CartDetail_negative_quantity() {
-        UUID productId = UUID.randomUUID();
-        CartId cartId = new CartId();
+    void shouldThrow_onCreate_CartDetail_negative_quantity() {
+        Long productId = random.nextLong();
         int quantity = -3;
         double price = 1.5;
         double weight = 20.5;
@@ -40,8 +39,7 @@ class CartDetailTest {
     }
 
     @Test
-    void create_CartDetail_fail_productId_null() {
-        CartId cartId = new CartId();
+    void shouldThrow_onCreate_CartDetail_fail_productId_null() {
         int quantity = 3;
         double price = 1.5;
         double weight = 20.5;
@@ -52,9 +50,8 @@ class CartDetailTest {
     }
 
     @Test
-    void create_CartDetail_negative_price() {
-        UUID productId = UUID.randomUUID();
-        CartId cartId = new CartId();
+    void shouldThrow_onCreate_CartDetail_negative_price() {
+        Long productId = random.nextLong();
         int quantity = 3;
         double price = -1.5;
         double weight = 20.5;
@@ -65,9 +62,8 @@ class CartDetailTest {
     }
 
     @Test
-    void create_CartDetail_negative_weight() {
-        UUID productId = UUID.randomUUID();
-        CartId cartId = new CartId();
+    void shouldThrow_onCreate_CartDetail_negative_weight() {
+        Long productId = random.nextLong();
         int quantity = 3;
         double price = 1.5;
         double weight = -20.5;

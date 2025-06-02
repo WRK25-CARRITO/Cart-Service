@@ -7,27 +7,25 @@ import org.springframework.stereotype.Service;
 @Service
 public class CartDetailMapper {
 
-    public static CartDetailEntity toEntity(CartDetail cartDetailDomain) {
+    public CartDetailEntity toEntity(CartDetail cartDetailDomain) {
 
         if(cartDetailDomain == null) return null;
 
         return CartDetailEntity.builder()
                 .productId(cartDetailDomain.getProductId())
                 .quantity(cartDetailDomain.getQuantity())
-                .totalPrice(cartDetailDomain.getTotalPrice())
-                .totalWeight(cartDetailDomain.getTotalWeight())
                 .build();
     }
 
-    public static CartDetail toDomain(CartDetailEntity cartDetailEntity) {
+    public CartDetail toDomain(CartDetailEntity cartDetailEntity) {
 
         if(cartDetailEntity == null) return null;
 
-        return CartDetail.build(
+        return CartDetail. build(
                 cartDetailEntity.getProductId(),
                 cartDetailEntity.getQuantity(),
-                cartDetailEntity.getTotalPrice(),
-                cartDetailEntity.getTotalWeight()
+                null,
+                null
                 );
     }
 

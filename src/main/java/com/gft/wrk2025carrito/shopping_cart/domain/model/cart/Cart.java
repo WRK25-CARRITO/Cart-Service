@@ -27,15 +27,15 @@ public class Cart {
     private Date updatedAt;
     private List<CartDetail> cartDetails;
     private CartState state;
-    private List<UUID> promotionIds;
+    private List<Long> promotionIds;
 
-    public static Cart build(CartId id, UUID userId, CountryTax countryTax, PaymentMethod paymentMethod, BigDecimal totalPrice, double totalWeight, Date createdAt , Date updatedAt, List<CartDetail> cartDetails, CartState state, List<UUID> idPromotion) {
+    public static Cart build(CartId id, UUID userId, CountryTax countryTax, PaymentMethod paymentMethod, BigDecimal totalPrice, Double totalWeight, Date createdAt , Date updatedAt, List<CartDetail> cartDetails, CartState state, List<Long> idPromotion) {
 
-        if (totalPrice.doubleValue() < 0) {
+        if (totalPrice != null && totalPrice.doubleValue() < 0) {
             throw new IllegalArgumentException("Price cannot be negative");
         }
 
-        if (totalWeight < 0) {
+        if (totalWeight != null && totalWeight < 0) {
             throw new IllegalArgumentException("Weight cannot be negative");
         }
 
@@ -53,6 +53,13 @@ public class Cart {
             }
         }
 
+        if(createdAt == null) {
+            throw new IllegalArgumentException("Cart createdAt date cannot be null");
+        }
+
+        if(updatedAt == null && state == CartState.CLOSED) {
+            throw new IllegalArgumentException("Cart updatedAt date cannot be null when cart state is CLOSED");
+        }
 
         return new Cart(id, userId,  countryTax, paymentMethod, totalPrice, totalWeight,  createdAt, updatedAt, cartDetails, state, idPromotion);
     }

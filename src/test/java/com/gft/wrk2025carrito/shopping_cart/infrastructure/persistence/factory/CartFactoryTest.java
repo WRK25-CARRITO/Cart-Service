@@ -10,6 +10,7 @@ import com.gft.wrk2025carrito.shopping_cart.domain.model.paymentMethod.PaymentMe
 import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.entity.CartEntity;
 import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.entity.CountryTaxEntity;
 import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.entity.PaymentMethodEntity;
+import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.mapper.CartDetailMapper;
 import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.mapper.CountryTaxMapper;
 import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.mapper.PaymentMethodMapper;
 import org.junit.jupiter.api.Test;
@@ -35,6 +36,9 @@ class CartFactoryTest {
     @Mock
     private PaymentMethodMapper paymentMethodMapper;
 
+    @Mock
+    private CartDetailMapper cartDetailMapper;
+
     @InjectMocks
     private CartFactory cartFactory;
 
@@ -45,14 +49,14 @@ class CartFactoryTest {
 
         CountryTaxEntity taxEntity = CountryTaxEntity.builder()
                 .id(UUID.randomUUID())
-                .country("Spain")
+                .country("ES")
                 .tax(0.2)
                 .build();
 
         PaymentMethodEntity paymentEntity = PaymentMethodEntity.builder()
                 .id(UUID.randomUUID())
                 .name("test")
-                .charge(2.0)
+                .charge(0.3)
                 .build();
 
         CartEntity entity = CartEntity.builder()
@@ -60,8 +64,6 @@ class CartFactoryTest {
                 .userId(userId)
                 .countryTax(taxEntity)
                 .paymentMethod(paymentEntity)
-                .totalPrice(BigDecimal.TEN)
-                .totalWeight(5.0)
                 .createdAt(new Date())
                 .updatedAt(new Date())
                 .cartDetails(Collections.emptyList())
@@ -69,17 +71,20 @@ class CartFactoryTest {
                 .promotionIds(Collections.emptyList())
                 .build();
 
-        // explota en el toDomain pq es null el id
-        when(countryTaxMapper.toDomain(taxEntity)).thenReturn(CountryTax.build(new CountryTaxId(), "ES", 0.2));
-        when(paymentMethodMapper.toDomain(paymentEntity)).thenReturn(PaymentMethod.build(new PaymentMethodId(), "VISA", 0.3));
+        CountryTax expectedTax = CountryTax.build(new CountryTaxId(), "ES", 0.2);
+        PaymentMethod expectedPayment = PaymentMethod.build(new PaymentMethodId(), "test", 0.3);
+
+        when(countryTaxMapper.toDomain(taxEntity)).thenReturn(expectedTax);
+        when(paymentMethodMapper.toDomain(paymentEntity)).thenReturn(expectedPayment);
 
         Cart result = cartFactory.toDomain(entity);
 
         assertEquals(cartId, result.getId().id());
         assertEquals(userId, result.getUserId());
-        assertEquals(BigDecimal.TEN, result.getTotalPrice());
-        assertEquals(5.0, result.getTotalWeight());
+        assertEquals(expectedTax, result.getCountryTax());
+        assertEquals(expectedPayment, result.getPaymentMethod());
     }
+
 
     @Test
     void toDomain_with_null_cartDetails_returns_empty_list() {
@@ -88,8 +93,6 @@ class CartFactoryTest {
                 .userId(UUID.randomUUID())
                 .countryTax(null)
                 .paymentMethod(null)
-                .totalPrice(BigDecimal.ONE)
-                .totalWeight(1.0)
                 .createdAt(new Date())
                 .updatedAt(new Date())
                 .cartDetails(null)
@@ -131,8 +134,7 @@ class CartFactoryTest {
 
         assertEquals(cartId, entity.getId());
         assertEquals(userId, entity.getUserId());
-        assertEquals(BigDecimal.TEN, entity.getTotalPrice());
-        assertEquals(5.0, entity.getTotalWeight());
+
     }
 
     @Test

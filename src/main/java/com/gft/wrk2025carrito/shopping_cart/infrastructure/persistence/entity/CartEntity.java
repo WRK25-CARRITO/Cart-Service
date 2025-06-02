@@ -4,7 +4,6 @@ import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.CartState;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -26,9 +25,6 @@ public class CartEntity {
     @Column(name = "id_User")
     private UUID userId;
 
-    @Column(name = "TOTAL_WEIGHT")
-    private double totalWeight;
-
     @ManyToOne
     @JoinColumn(name = "country_Tax_Id")
     private CountryTaxEntity countryTax;
@@ -36,9 +32,6 @@ public class CartEntity {
     @ManyToOne
     @JoinColumn(name = "payment_Method_Id")
     private PaymentMethodEntity paymentMethod;
-
-    @Column(name = "TOTAL_PRICE" ,columnDefinition = "DECIMAL(10,3)")
-    private BigDecimal totalPrice;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "STATE")
@@ -53,11 +46,14 @@ public class CartEntity {
     private Date updatedAt;
 
     @ElementCollection(fetch = FetchType.EAGER)
-    @JoinTable(name = "CART_DETAILS", joinColumns = @JoinColumn(name = "cart_Id"))
+    @CollectionTable(
+            name = "CART_DETAILS",
+            joinColumns = @JoinColumn(name = "CART_ID")
+    )
     private List<CartDetailEntity> cartDetails;
 
     @ElementCollection(fetch = FetchType.EAGER)
     @JoinTable (name = "PROMOTIONS_CARTS", joinColumns = @JoinColumn(name = "CART_ID"))
     @Column(name = "ID_PROMOTION")
-    private List<UUID> promotionIds;
+    private List<Long> promotionIds;
 }

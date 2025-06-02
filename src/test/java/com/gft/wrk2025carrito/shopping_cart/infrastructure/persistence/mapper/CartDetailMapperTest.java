@@ -5,19 +5,21 @@ import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.entity.Ca
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
-import java.util.UUID;
+import java.util.Random;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class CartDetailMapperTest {
+
+    private final Random random = new Random();
 
     private final CartDetailMapper cartDetailMapper = new CartDetailMapper();
 
     @Test
     void toEntity_and_back_should_preserve_values() {
         CartDetail domain = CartDetail.build(
-                UUID.randomUUID(),
-                2,
+                random.nextLong(),
+        2,
                 BigDecimal.valueOf(10.5),
                 1.2
         );
@@ -25,14 +27,10 @@ class CartDetailMapperTest {
         CartDetailEntity entity = cartDetailMapper.toEntity(domain);
         assertEquals(domain.getProductId(), entity.getProductId());
         assertEquals(domain.getQuantity(), entity.getQuantity());
-        assertEquals(domain.getTotalPrice(), entity.getTotalPrice());
-        assertEquals(domain.getTotalWeight(), entity.getTotalWeight());
 
         CartDetail result = cartDetailMapper.toDomain(entity);
         assertEquals(domain.getProductId(), result.getProductId());
         assertEquals(domain.getQuantity(), result.getQuantity());
-        assertEquals(domain.getTotalPrice(), result.getTotalPrice());
-        assertEquals(domain.getTotalWeight(), result.getTotalWeight());
     }
 
     @Test

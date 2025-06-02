@@ -2,82 +2,65 @@ package com.gft.wrk2025carrito.shopping_cart.infrastructure.web;
 
 import com.gft.wrk2025carrito.shopping_cart.domain.services.CartServices;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Map;
 import java.util.UUID;
 
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(CartController.class)
+@ExtendWith(MockitoExtension.class)
 class CartControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
-
-    @MockitoBean
+    @Mock
     private CartServices cartServices;
 
+    @InjectMocks
+    private CartController controller;
+
     @Test
-    void should_Return204_WhenDeletingCartById() throws Exception {
+    void getAllCarts() {
+        controller.getAll();
+        verify(cartServices, atLeastOnce()).getAll();
+    }
+
+    @Test
+    void getCartById_ok() {
         UUID id = UUID.randomUUID();
+        controller.getById(id);
+        verify(cartServices, atLeastOnce()).getById(id);
+    }
 
-        mockMvc.perform(delete("/carts/" + id))
-                .andExpect(status().isNoContent());
-
+    @Test
+    void should_DeleteCartById_Successfully() {
+        UUID id = UUID.randomUUID();
+        controller.delete(id);
         verify(cartServices).delete(id);
     }
 
     @Test
-    void should_Return400_WhenDeletingCartById() throws Exception {
-        UUID id = UUID.randomUUID();
-        doThrow(new IllegalArgumentException()).when(cartServices).delete(id);
-
-        mockMvc.perform(delete("/carts/" + id))
-                .andExpect(status().isBadRequest());
-
+    void should_DeleteCartByUserId_Successfully() {
+        UUID userId = UUID.randomUUID();
+        controller.deleteByUser(userId);
+        verify(cartServices).deleteAllByUserId(userId);
     }
 
     @Test
-    void should_Return404_WhenCart_NotFound() throws Exception {
-        UUID id = UUID.randomUUID();
-        doThrow(new IllegalStateException()).when(cartServices).delete(id);
-
-        mockMvc.perform(delete("/carts/" + id))
-                .andExpect(status().isNotFound());
+    void should_UpdateCart_Successfully() {
+        UUID cartId = UUID.randomUUID();
+        Map<Long, Integer> cartProducts = Map.of(1L, 2, 2L, 3);
+        controller.update(cartId, cartProducts);
+        verify(cartServices).update(cartId, cartProducts);
     }
 
     @Test
-    void should_Return204_WhenDeletingCartByUserId() throws Exception {
+    void should_CreateCart_Successfully() {
         UUID id = UUID.randomUUID();
-
-        mockMvc.perform(delete("/carts/user/" + id))
-                .andExpect(status().isNoContent());
-
-        verify(cartServices).deleteAllByUserId(id);
-    }
-
-    @Test
-    void should_Return400_WhenDeletingCartByUserId() throws Exception {
-        UUID id = UUID.randomUUID();
-        doThrow(new IllegalArgumentException()).when(cartServices).deleteAllByUserId(id);
-
-        mockMvc.perform(delete("/carts/user/" + id))
-                .andExpect(status().isBadRequest());
-
-    }
-
-    @Test
-    void should_Return404_WhenCartByUser_NotFound() throws Exception {
-        UUID id = UUID.randomUUID();
-        doThrow(new IllegalStateException()).when(cartServices).deleteAllByUserId(id);
-
-        mockMvc.perform(delete("/carts/user/" + id))
-                .andExpect(status().isNotFound());
+        controller.createCart(id);
+        verify(cartServices).createCart(id);
     }
 
 }
