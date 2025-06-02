@@ -1,8 +1,11 @@
 package com.gft.wrk2025carrito.shopping_cart.application.helper;
 
+import org.springframework.stereotype.Service;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
+@Service
 public class CartCalculator {
 
     public static BigDecimal applyTax(BigDecimal price, Double taxRate)throws Exception  {
@@ -13,9 +16,9 @@ public class CartCalculator {
         return round(calculatedPrice);
     }
 
-    public static BigDecimal applyCharge(BigDecimal price, Double charge)throws Exception  {
-        validatePercentageAndAmount(price, charge, "Charge");
-        BigDecimal normalizedCharge = BigDecimal.valueOf(charge);
+    public static BigDecimal applyCharge(BigDecimal price, Double chargeRate)throws Exception  {
+        validatePercentageAndAmount(price, chargeRate, "Charge");
+        BigDecimal normalizedCharge = BigDecimal.valueOf(chargeRate);
         BigDecimal calculatedPrice = price.multiply(BigDecimal.ONE.add( normalizedCharge));
         return round(calculatedPrice);
     }

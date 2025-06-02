@@ -12,7 +12,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class CartCalculatorTest {
 
-
     @Nested
     @DisplayName("applyTax tests")
     class ApplyTaxTests {
@@ -81,6 +80,7 @@ class CartCalculatorTest {
 
             BigDecimal result = CartCalculator.applyCharge(price, chargeRate);
             assertEquals(expected, result);
+
         }
 
         @Test
