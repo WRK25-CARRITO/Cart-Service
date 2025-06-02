@@ -11,6 +11,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.Collections;
 import java.util.Date;
@@ -29,6 +34,9 @@ class CartServicesImplTest {
 
     @Mock
     private CartFactory cartFactory;
+
+    @Mock
+    private RestTemplate restTemplate;
 
     @InjectMocks
     private CartServicesImpl cartService;
@@ -93,10 +101,87 @@ class CartServicesImplTest {
         when(repository.findById(cartId)).thenReturn(existingCart);
         when(repository.save(any())).thenReturn(existingCart);
 
+        // Mock respuesta de API externa
+        Object[] fakeProductResponse = new Object[]{ new Object() };
+        when(restTemplate.exchange(
+                anyString(),
+                eq(HttpMethod.POST),
+                any(HttpEntity.class),
+                eq(Object[].class))
+        ).thenReturn(new ResponseEntity<>(fakeProductResponse, HttpStatus.OK));
+
         cartService.update(dto);
 
         verify(existingCart).setCartDetails(any());
         verify(repository).save(any());
+    }
+
+    @Test
+    void should_throwException_whenCartStateIsPendingOrClosed() {
+        UUID cartId = UUID.randomUUID();
+        Long productId = 1L;
+        Map<Long, Integer> productData = Map.of(productId, 3);
+
+        CartUpdateDTO dto = new CartUpdateDTO(cartId, productData);
+
+        Cart cart = mock(Cart.class);
+        when(cart.getState()).thenReturn(CartState.PENDING); // o CartState.CLOSED
+        when(repository.existsById(cartId)).thenReturn(true);
+        when(repository.findById(cartId)).thenReturn(cart);
+
+        assertThrows(IllegalArgumentException.class, () -> cartService.update(dto));
+    }
+
+    @Test
+    void should_throwException_whenProductIdsMismatch() {
+        UUID cartId = UUID.randomUUID();
+        Long productId = 1L;
+        Map<Long, Integer> productData = Map.of(productId, 3);
+
+        CartUpdateDTO dto = new CartUpdateDTO(cartId, productData);
+        Cart cart = mock(Cart.class);
+        when(cart.getState()).thenReturn(CartState.ACTIVE);
+        when(repository.existsById(cartId)).thenReturn(true);
+        when(repository.findById(cartId)).thenReturn(cart);
+
+        // API devuelve lista vacía (no corresponde con los IDs)
+        when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(Object[].class)))
+                .thenReturn(new ResponseEntity<>(new Object[0], HttpStatus.OK));
+
+        assertThrows(IllegalArgumentException.class, () -> cartService.update(dto));
+    }
+
+    @Test
+    void should_throwException_whenProductResponseIsNull() {
+        UUID cartId = UUID.randomUUID();
+        Long productId = 1L;
+        Map<Long, Integer> productData = Map.of(productId, 3);
+        CartUpdateDTO dto = new CartUpdateDTO(cartId, productData);
+        Cart cart = mock(Cart.class);
+        when(cart.getState()).thenReturn(CartState.ACTIVE);
+        when(repository.existsById(cartId)).thenReturn(true);
+        when(repository.findById(cartId)).thenReturn(cart);
+
+        when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(Object[].class)))
+                .thenReturn(new ResponseEntity<>(null, HttpStatus.OK));
+
+        assertThrows(IllegalArgumentException.class, () -> cartService.update(dto));
+    }
+
+    @Test
+    void should_throwException_whenCartStateIsClosed() {
+        UUID cartId = UUID.randomUUID();
+        Long productId = 1L;
+        Map<Long, Integer> productData = Map.of(productId, 3);
+
+        CartUpdateDTO dto = new CartUpdateDTO(cartId, productData);
+
+        Cart cart = mock(Cart.class);
+        when(cart.getState()).thenReturn(CartState.CLOSED);
+        when(repository.existsById(cartId)).thenReturn(true);
+        when(repository.findById(cartId)).thenReturn(cart);
+
+        assertThrows(IllegalArgumentException.class, () -> cartService.update(dto));
     }
 
     @Test
