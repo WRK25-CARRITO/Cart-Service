@@ -4,7 +4,6 @@ import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.Cart;
 
 import java.util.List;
 import com.gft.wrk2025carrito.shopping_cart.application.dto.CartUpdateDTO;
-import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.Cart;
 
 import java.util.UUID;
 
@@ -26,4 +25,7 @@ public interface CartServices {
 
     Cart createCart(UUID cart);
 
+    List<Cart> getAll();
+
+    Cart getById(UUID id);
 }
