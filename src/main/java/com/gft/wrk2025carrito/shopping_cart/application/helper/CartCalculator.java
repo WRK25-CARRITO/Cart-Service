@@ -11,7 +11,6 @@ public class CartCalculator {
     public static BigDecimal applyTax(BigDecimal price, Double taxRate)throws Exception  {
         validatePercentageAndAmount(price, taxRate, "Tax");
         BigDecimal normalizedTax = BigDecimal.valueOf(taxRate);
-
         BigDecimal calculatedPrice = price.multiply(BigDecimal.ONE.add(normalizedTax));
         return round(calculatedPrice);
     }
