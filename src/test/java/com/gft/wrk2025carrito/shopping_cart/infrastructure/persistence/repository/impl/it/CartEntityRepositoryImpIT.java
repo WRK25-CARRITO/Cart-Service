@@ -1,7 +1,8 @@
 package com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.repository.impl.it;
 
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.Cart;
-import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.entity.CartEntity;
+import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.CartId;
+import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.CartState;
 import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.factory.CartFactory;
 import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.mapper.CartDetailMapper;
 import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.mapper.CountryTaxMapper;
@@ -13,6 +14,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -31,6 +33,9 @@ class CartEntityRepositoryImpIT {
 
     @Autowired
     CartEntityRepositoryImpl cartEntityRepository;
+
+    @Autowired
+    CartFactory cartFactory;
 
     @Test
     void deleteById_WhenCartExists_RemovesCart() {
@@ -80,8 +85,6 @@ class CartEntityRepositoryImpIT {
         assertNotNull(result);
     }
 
-
-
     @Test
     void deleteByUserId_WhenCartsExist_RemovesCarts() {
         UUID userId = UUID.fromString("b96124a9-69a6-4859-acc7-5708ab07cd80");
@@ -100,6 +103,34 @@ class CartEntityRepositoryImpIT {
         assertTrue(exists);
     }
 
+    @Test
+    void save_ShouldPersistCartEntity() {
+        UUID cartId = UUID.randomUUID();
+        Cart cart = Cart.build(
+                new CartId(cartId), UUID.randomUUID(), null, null, null, null,
+                new Date(), null, List.of(), CartState.ACTIVE, List.of()
+        );
+
+        Cart result = cartEntityRepository.save(cartFactory.toEntity(cart));
+
+        assertNotNull(result);
+        assertEquals(cartId, result.getId().id());
+    }
+
+    @Test
+    void create_ShouldSaveAndReturnCart() {
+        UUID userId = UUID.randomUUID();
+
+        Cart cart = Cart.build(
+                new CartId(), userId, null, null, null, null,
+                new Date(), null, List.of(), CartState.ACTIVE, List.of()
+        );
+
+        Cart result = cartEntityRepository.create(cart);
+
+        assertNotNull(result);
+        assertEquals(userId, result.getUserId());
+    }
 
 }
 

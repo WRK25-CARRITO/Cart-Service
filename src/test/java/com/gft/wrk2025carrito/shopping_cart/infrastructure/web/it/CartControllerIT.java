@@ -1,5 +1,7 @@
 package com.gft.wrk2025carrito.shopping_cart.infrastructure.web.it;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gft.wrk2025carrito.shopping_cart.application.dto.CartUpdateDTO;
 import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.repository.CartEntityJpaRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -11,6 +13,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.Map;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -21,7 +24,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-// sin esto no funciona
 @Sql(scripts = {"/data/h2/schema.sql", "/data/h2/data.sql"})
 public class CartControllerIT {
 
@@ -30,6 +32,9 @@ public class CartControllerIT {
 
     @Autowired
     private CartEntityJpaRepository cartRepository;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     private UUID existingCartId;
     private UUID existingUserId;
@@ -129,4 +134,41 @@ public class CartControllerIT {
                 .andExpect(status().isBadRequest());
     }
 
+    @Test
+    void should_Return400_WhenUpdatingCartWithInvalidProductIds() throws Exception {
+        Map<Long, Integer> invalidProducts = Map.of(999L, 1);
+        CartUpdateDTO dto = new CartUpdateDTO(existingCartId, invalidProducts);
+
+        String json = objectMapper.writeValueAsString(dto);
+
+        mockMvc.perform(put("/carts")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void should_Return400_WhenProductIdsAreInvalid() throws Exception {
+        Map<Long, Integer> invalidProducts = Map.of(99999L, 1); // ID no válido
+        CartUpdateDTO dto = new CartUpdateDTO(existingCartId, invalidProducts);
+
+        String json = objectMapper.writeValueAsString(dto);
+
+        mockMvc.perform(put("/carts")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void should_Return400_WhenCartIdIsNull() throws Exception {
+        CartUpdateDTO dto = new CartUpdateDTO(null, Map.of(1L, 1));
+
+        String json = objectMapper.writeValueAsString(dto);
+
+        mockMvc.perform(put("/carts")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isBadRequest());
+    }
 }

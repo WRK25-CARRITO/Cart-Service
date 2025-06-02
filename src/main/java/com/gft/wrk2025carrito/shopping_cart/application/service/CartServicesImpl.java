@@ -10,12 +10,13 @@ import com.gft.wrk2025carrito.shopping_cart.domain.services.CartServices;
 import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.factory.CartFactory;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
-import java.util.Date;
+import java.util.*;
 import java.math.BigDecimal;
-import java.util.List;
-import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -23,6 +24,7 @@ public class CartServicesImpl implements CartServices {
 
     private final CartRepository cartRepository;
     private final CartFactory cartFactory;
+    private final RestTemplate restTemplate;
 
     @Override
     @Transactional
@@ -58,24 +60,58 @@ public class CartServicesImpl implements CartServices {
     @Override
     @Transactional
     public void update(CartUpdateDTO cartDTO) {
+        String url = "https://workshop-7uvd.onrender.com/api/v1/products/list-by-ids";
+
         if (cartDTO.cartId() == null) {
             throw new IllegalArgumentException("Cart id cannot be null");
         }
 
-        boolean exists = cartRepository.existsById(cartDTO.cartId());
-
-        if (!exists) {
+        if (!cartRepository.existsById(cartDTO.cartId())) {
             throw new IllegalArgumentException("Cart with id " + cartDTO.cartId() + " does not exist");
         }
 
-        Cart cart = cartRepository.findById(cartDTO.cartId());
+        if(cartRepository.findById(cartDTO.cartId()).getState() == CartState.PENDING || cartRepository.findById(cartDTO.cartId()).getState() == CartState.CLOSED) {
+            throw new IllegalArgumentException("Cart with id " + cartDTO.cartId() + " cannot be updated");
+        }
+
+        // eliminar duplicados y sumar cantidad
+        Map<Long, Integer> productQuantities = cartDTO.productData().entrySet().stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        Map.Entry::getValue,
+                        Integer::sum
+                ));
+
+        List<Long> productIds = new ArrayList<>(productQuantities.keySet());
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<List<Long>> request = new HttpEntity<>(productIds, headers);
+
+        System.out.println("Request enviada ");
+
+        // llamada a la API de productos
+        ResponseEntity<Object[]> response = restTemplate.exchange(
+                url,
+                HttpMethod.POST,
+                request,
+                Object[].class
+        );
+
+        Object[] productos = response.getBody();
+
+        System.out.println("Request terminada ");
+
+        if (productos == null || productos.length != productIds.size()) {
+            throw new IllegalArgumentException("One or more product IDs are invalid");
+        }
 
         List<CartDetail> newCartDetails = cartDTO.productData().entrySet().stream()
                 .map(entry -> CartDetail.build(entry.getKey(), entry.getValue(), BigDecimal.ZERO, 0.0))
                 .toList();
 
+        Cart cart = cartRepository.findById(cartDTO.cartId());
         cart.setCartDetails(newCartDetails);
-
         cartRepository.save(cartFactory.toEntity(cart));
     }
 
