@@ -8,14 +8,26 @@ import java.math.RoundingMode;
 @Service
 public class CartCalculator {
 
-    public static BigDecimal applyTax(BigDecimal price, Double taxRate)throws Exception  {
+    public BigDecimal applyTax(BigDecimal price, Double taxRate)throws Exception  {
         validatePercentageAndAmount(price, taxRate, "Tax");
         BigDecimal normalizedTax = BigDecimal.valueOf(taxRate);
         BigDecimal calculatedPrice = price.multiply(BigDecimal.ONE.add(normalizedTax));
         return round(calculatedPrice);
     }
 
-    public static BigDecimal applyCharge(BigDecimal price, Double chargeRate)throws Exception  {
+    public BigDecimal calculateShippingCost(double totalWeight) {
+        if (totalWeight <= 5.0) {
+            return BigDecimal.valueOf(5);
+        } else if (totalWeight <= 10.0) {
+            return BigDecimal.valueOf(10);
+        } else if (totalWeight <= 20.0) {
+            return BigDecimal.valueOf(20);
+        } else {
+            return BigDecimal.valueOf(50);
+        }
+    }
+
+    public BigDecimal applyCharge(BigDecimal price, Double chargeRate)throws Exception  {
         validatePercentageAndAmount(price, chargeRate, "Charge");
         BigDecimal normalizedCharge = BigDecimal.valueOf(chargeRate);
         BigDecimal calculatedPrice = price.multiply(BigDecimal.ONE.add( normalizedCharge));
