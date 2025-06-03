@@ -204,6 +204,7 @@ public class CartServicesImpl implements CartServices {
         if (allProductsArray == null) {
             throw new IllegalArgumentException("Failed to fetch products to compute total");
         }
+
         List<ProductDTO> allProducts = Arrays.asList(allProductsArray);
 
         Map<Long, Integer> quantities = cart.getCartDetails().stream()
