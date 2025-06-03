@@ -19,7 +19,7 @@ class CartDetailTest {
         double price = 1.5;
         double weight = 20.5;
 
-        CartDetail cartDetail = CartDetail.build(productId,quantity, BigDecimal.valueOf(price), weight);
+        CartDetail cartDetail = CartDetail.build(productId,quantity  ,BigDecimal.valueOf(price), weight);
 
         assertEquals(3,cartDetail.getQuantity());
         assertEquals(BigDecimal.valueOf(1.5),cartDetail.getTotalPrice());

@@ -1,16 +1,89 @@
 package com.gft.wrk2025carrito.shopping_cart.application.helper;
 
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gft.wrk2025carrito.shopping_cart.application.dto.Product;
+import com.gft.wrk2025carrito.shopping_cart.application.dto.Promotion;
+import com.gft.wrk2025carrito.shopping_cart.application.dto.PromotionQuantity;
+import com.gft.wrk2025carrito.shopping_cart.application.dto.PromotionSeason;
+import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.Cart;
+import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.CartId;
+import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.CartState;
+import com.gft.wrk2025carrito.shopping_cart.domain.model.cartDetail.CartDetail;
+import com.gft.wrk2025carrito.shopping_cart.domain.model.countryTax.CountryTax;
+import com.gft.wrk2025carrito.shopping_cart.domain.model.countryTax.CountryTaxId;
+import com.gft.wrk2025carrito.shopping_cart.domain.model.paymentMethod.PaymentMethod;
+import com.gft.wrk2025carrito.shopping_cart.domain.model.paymentMethod.PaymentMethodId;
+import com.github.tomakehurst.wiremock.WireMockServer;
+import jdk.jfr.Enabled;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
+import java.util.Date;
+import java.util.List;
+import java.util.UUID;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.junit.jupiter.api.Assertions.*;
 
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class CartCalculatorTest {
+
+    private static final ObjectMapper objectMapper = new ObjectMapper();
+
+    private final RestTemplate restTemplate = new RestTemplate();
+
+    @Test
+    void calculateAndUpdateCart_ShouldReturnValidCart() throws Exception {
+        // 1. Mock del producto
+        Product mockProduct = new Product(1L, "Product A", "TOYS", BigDecimal.valueOf(100), 50.0 );
+        stubFor(post(urlEqualTo("/api/v1/products/list-by-ids"))
+                .willReturn(aResponse()
+                        .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+                        .withBody(objectMapper.writeValueAsString(List.of(mockProduct)))));
+
+
+
+        // 3. Crear CartDetail usando build
+        CartDetail detail = CartDetail.build(
+                1L, // productId
+                2,  // quantity
+                null, // totalPrice (lo calculará CartCalculator)
+                null  // totalWeight
+        );
+
+        // 4. Crear Cart usando build
+        Cart cart = Cart.build(
+                new CartId(),
+                UUID.randomUUID(),
+                CountryTax.build(new CountryTaxId(),"ES", 0.21),
+                PaymentMethod.build(new PaymentMethodId(),"Card", 0.05),
+                null,
+                null,
+                new Date(),
+                new Date(),
+                List.of(detail),
+                CartState.CLOSED,
+                List.of(1L)
+        );
+
+        // 5. Ejecutar cálculo
+        Cart result = CartCalculator.calculateAndUpdateCart(cart, restTemplate);
+
+        // 6. Validaciones
+        assertNotNull(result.getTotalPrice());
+        System.out.println("TOTAL FINAL: " + result.getTotalPrice());
+
+        // Precio esperado = 300.0 - 20% = 240 + 5% = 252 + 21% = 305.92
+        BigDecimal expected = BigDecimal.valueOf(305.92).setScale(2);
+
+        assertEquals(expected, result.getTotalPrice(), "El total final con promoción y tasas no es correcto");
+        assertEquals(6.0, result.getTotalWeight(), "El peso total debe ser 3 * 2.0");
+    }
 
     @Nested
     @DisplayName("applyTax tests")
