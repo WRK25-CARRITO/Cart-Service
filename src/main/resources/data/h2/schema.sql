@@ -1,3 +1,5 @@
+USE CARRITOBD;
+
 DROP TABLE IF EXISTS PROMOTIONS_CARTS;
 DROP TABLE IF EXISTS CART_DETAILS;
 DROP TABLE IF EXISTS CARTS;
@@ -5,7 +7,7 @@ DROP TABLE IF EXISTS COUNTRY_TAXES;
 DROP TABLE IF EXISTS PAYMENT_METHODS;
 
 CREATE TABLE IF NOT EXISTS PAYMENT_METHODS (
-    ID                  UUID                    ,
+    ID                  BINARY(16)                    ,
     NAME                VARCHAR(100)    NOT NULL,
     CHARGE              DOUBLE          NOT NULL,
 
@@ -13,7 +15,7 @@ CREATE TABLE IF NOT EXISTS PAYMENT_METHODS (
 );
 
 CREATE TABLE IF NOT EXISTS COUNTRY_TAXES (
-    ID                  UUID                    ,
+    ID                  BINARY(16)                    ,
     COUNTRY             VARCHAR(100)    NOT NULL,
     TAX                 DOUBLE          NOT NULL,
 
@@ -21,10 +23,10 @@ CREATE TABLE IF NOT EXISTS COUNTRY_TAXES (
 );
 
 CREATE TABLE IF NOT EXISTS CARTS (
-    ID                  UUID                     ,
-    ID_USER             UUID             NOT NULL,
-    COUNTRY_TAX_ID      UUID,
-    PAYMENT_METHOD_ID   UUID,
+    ID                  BINARY(16)                     ,
+    ID_USER             BINARY(16)             NOT NULL,
+    COUNTRY_TAX_ID      BINARY(16),
+    PAYMENT_METHOD_ID   BINARY(16),
     CREATED_AT          TIMESTAMP,
     UPDATED_AT          TIMESTAMP,
     STATE               VARCHAR(30)     NOT NULL,
@@ -35,7 +37,7 @@ CREATE TABLE IF NOT EXISTS CARTS (
 );
 
 CREATE TABLE IF NOT EXISTS CART_DETAILS (
-    CART_ID             UUID                NOT NULL,
+    CART_ID             BINARY(16)                NOT NULL,
     PRODUCT_ID          BIGINT              NOT NULL,
     QUANTITY            INTEGER             NOT NULL,
 
@@ -44,7 +46,7 @@ CREATE TABLE IF NOT EXISTS CART_DETAILS (
 
 CREATE TABLE IF NOT EXISTS PROMOTIONS_CARTS(
     ID_PROMOTION        BIGINT,
-    CART_ID             UUID            NOT NULL,
+    CART_ID             BINARY(16)            NOT NULL,
 
     PRIMARY KEY (ID_PROMOTION, CART_ID),
     FOREIGN KEY (CART_ID) REFERENCES CARTS(ID) ON DELETE RESTRICT ON UPDATE CASCADE
