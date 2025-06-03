@@ -1,0 +1,59 @@
+name: Deploy to Cloud Run
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Deploy to Cloud Run
+    runs-on: ubuntu-latest
+
+    env:
+      PROJECT_ID: wrk25carrito
+      REGION: europe-southwest1
+      SERVICE_NAME: wrk25-carrito
+      IMAGE_NAME: wrk25-carrito-image
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Authenticate with Google Cloud
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: '${{ secrets.GCP_SA_KEY }}'
+
+      - name: Set up gcloud CLI
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          project_id: ${{ env.PROJECT_ID }}
+          install_components: 'beta'
+
+      - name: Build app with Maven
+        run: mvn clean package -DskipTests
+
+      - name: Build and push container image
+        run: |
+          gcloud builds submit \
+            --tag gcr.io/${{ env.PROJECT_ID }}/${{ env.IMAGE_NAME }}
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy ${{ env.SERVICE_NAME }} \
+            --image gcr.io/${{ env.PROJECT_ID }}/${{ env.IMAGE_NAME }} \
+            --region ${{ env.REGION }} \
+            --platform managed \
+            --allow-unauthenticated \
+            --add-cloudsql-instances=wrk25carrito:europe-southwest1:carrito \
+            --set-env-vars |
+              SPRING_DATASOURCE_URL=jdbc:mysql:///CARRITOBD?cloudSqlInstance=wrk25carrito:europe-southwest1:carrito&socketFactory=com.google.cloud.sql.mysql.SocketFactory,\
+              SPRING_DATASOURCE_USERNAME=${{ secrets.CLOUD_SQL_USER }},\
+              SPRING_DATASOURCE_PASSWORD=${{ secrets.CLOUD_SQL_PASSWORD }}
