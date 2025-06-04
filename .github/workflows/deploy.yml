@@ -1,52 +1,59 @@
-name: GCP Deployment Pipeline
+name: Deploy to Cloud Run
 
 on:
-  workflow_run:
-    workflows: ["testing"]  # Nombre exacto del primer workflow
-    types:
-      - completed
+  push:
     branches:
       - main
 
 jobs:
-  gcp_deployment:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}  # Solo si los tests pasaron
+  deploy:
+    name: Deploy to Cloud Run
     runs-on: ubuntu-latest
 
-    steps:
-      # Paso 1: Checkout del código
-      - name: Checkout code
-        uses: actions/checkout@v4
+    env:
+      PROJECT_ID: wrk25carrito
+      REGION: europe-southwest1
+      SERVICE_NAME: wrk25-carrito
+      IMAGE_NAME: wrk25-carrito-image
 
-      # Paso 2: Autenticarse con la cuenta de servicio
-      - name: Authenticate to Google Cloud
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Authenticate with Google Cloud
         uses: google-github-actions/auth@v1
         with:
-          credentials_json: ${{ secrets.GCP_SA_KEY }}
+          credentials_json: '${{ secrets.GCP_SA_KEY }}'
 
-      # Paso 3: Autenticar Docker en Artifact Registry
-      - name: Configure Docker authentication
-        run: |
-          gcloud auth configure-docker europe-southwest1-docker.pkg.dev
-
-      # Paso 4: Construir imagen Docker
-      - name: Build Docker image
-        run: |
-          docker build \
-            -t europe-southwest1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/coms-repository/coms-image:latest \
-            .
-
-      # Paso 5: Subir imagen a Artifact Registry
-      - name: Push Docker image
-        run: |
-          docker push \
-            europe-southwest1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/coms-repository/coms-image:latest
-
-      # Paso 6: Desplegar en Google Cloud Run
-      - name: Deploy to Cloud Run
-        uses: google-github-actions/deploy-cloudrun@v1
+      - name: Set up gcloud CLI
+        uses: google-github-actions/setup-gcloud@v1
         with:
-          service: ${{ secrets.CART_RUN_SERVICE }}
-          image: europe-southwest1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/coms-repository/coms-image:latest
-          region: ${{ secrets.GCP_REGION }}
-          flags: --allow-unauthenticated
+          project_id: ${{ env.PROJECT_ID }}
+          install_components: 'beta'
+
+      - name: Build app with Maven
+        run: mvn clean package -DskipTests
+
+      - name: Build and push container image
+        run: |
+          gcloud builds submit \
+            --tag gcr.io/${{ env.PROJECT_ID }}/${{ env.IMAGE_NAME }}
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy ${{ env.SERVICE_NAME }} \
+            --image gcr.io/${{ env.PROJECT_ID }}/${{ env.IMAGE_NAME }} \
+            --region ${{ env.REGION }} \
+            --platform managed \
+            --allow-unauthenticated \
+            --add-cloudsql-instances=wrk25carrito:europe-southwest1:carrito \
+            --set-env-vars |
+              SPRING_DATASOURCE_URL=jdbc:mysql:///CARRITOBD?cloudSqlInstance=wrk25carrito:europe-southwest1:carrito&socketFactory=com.google.cloud.sql.mysql.SocketFactory,\
+              SPRING_DATASOURCE_USERNAME=${{ secrets.CLOUD_SQL_USER }},\
+              SPRING_DATASOURCE_PASSWORD=${{ secrets.CLOUD_SQL_PASSWORD }}
