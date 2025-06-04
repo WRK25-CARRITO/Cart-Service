@@ -135,7 +135,7 @@ public class CartServicesImpl implements CartServices {
         }
 
         List<CartDetail> newCartDetails = productQuantities.entrySet().stream()
-                .map(entry -> CartDetail.build(entry.getKey(), entry.getValue(), BigDecimal.ZERO, 0.0))
+                .map(entry -> CartDetail.build(entry.getKey(), entry.getValue(),BigDecimal.ZERO, 0.0))
                 .toList();
 
         cart.setCartDetails(newCartDetails);

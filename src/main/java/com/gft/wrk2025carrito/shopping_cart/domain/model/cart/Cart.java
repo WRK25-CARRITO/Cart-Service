@@ -11,10 +11,13 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+@Generated
 @EqualsAndHashCode(of = {"id"})
 @Getter
 @Setter
+@Builder(toBuilder = true)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
+@NoArgsConstructor
 public class Cart {
 
     private CartId id;

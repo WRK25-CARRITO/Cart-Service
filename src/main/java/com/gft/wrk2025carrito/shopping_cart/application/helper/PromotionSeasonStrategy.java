@@ -7,6 +7,7 @@ import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.Cart;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cartDetail.CartDetail;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Map;
 
 public class PromotionSeasonStrategy implements PromotionStrategy{
@@ -15,6 +16,7 @@ public class PromotionSeasonStrategy implements PromotionStrategy{
     public boolean supports(Promotion promotion) {
         return promotion instanceof PromotionSeason;
     }
+
 
     @Override
     public BigDecimal apply(Promotion promotion, Cart cart, Map<Long, Product> productMap) {
@@ -29,12 +31,11 @@ public class PromotionSeasonStrategy implements PromotionStrategy{
             if (seasonPromo.getAffectedCategories().contains(product.getCategory())) {
                 baseLineTotal = baseLineTotal.multiply(BigDecimal.ONE.subtract(BigDecimal.valueOf(seasonPromo.getDiscount())));
             }
-
             detail.setTotalPrice(baseLineTotal);
             total = total.add(baseLineTotal);
         }
 
-        return total;
+        return total.setScale(2, RoundingMode.HALF_UP);
     }
 
 }
