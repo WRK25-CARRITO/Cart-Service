@@ -167,7 +167,6 @@ public class CartCalculator {
             return calculateSubtotalFromCartDetails(cart);
         }
 
-        // Aplica promos de cantidad y actualiza los precios de los detalles
         for (Promotion promo : promotions) {
             if (promo instanceof PromotionQuantity) {
                 for (PromotionStrategy strategy : strategies) {
@@ -179,7 +178,6 @@ public class CartCalculator {
             }
         }
 
-        // Aplica promos de temporada sobre los detalles ya modificados
         for (Promotion promo : promotions) {
             if (promo instanceof PromotionSeason) {
                 for (PromotionStrategy strategy : strategies) {
