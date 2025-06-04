@@ -17,6 +17,7 @@ import java.util.UUID;
 @Setter
 @Builder(toBuilder = true)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
+@NoArgsConstructor
 public class Cart {
 
     private CartId id;

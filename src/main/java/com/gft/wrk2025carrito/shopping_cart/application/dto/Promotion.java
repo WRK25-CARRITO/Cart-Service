@@ -2,10 +2,7 @@ package com.gft.wrk2025carrito.shopping_cart.application.dto;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import lombok.AllArgsConstructor;
-import lombok.Generated;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.Date;
 
@@ -20,6 +17,7 @@ import java.util.Date;
         @JsonSubTypes.Type(value = PromotionQuantity.class, name = "QUANTITY")
 })
 @Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public abstract class Promotion {

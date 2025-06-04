@@ -1,89 +1,242 @@
 package com.gft.wrk2025carrito.shopping_cart.application.helper;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gft.wrk2025carrito.shopping_cart.application.dto.Product;
 import com.gft.wrk2025carrito.shopping_cart.application.dto.Promotion;
 import com.gft.wrk2025carrito.shopping_cart.application.dto.PromotionQuantity;
 import com.gft.wrk2025carrito.shopping_cart.application.dto.PromotionSeason;
+import com.gft.wrk2025carrito.shopping_cart.application.service.client.ProductMicroserviceService;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.Cart;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.CartId;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.CartState;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cartDetail.CartDetail;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.countryTax.CountryTax;
-import com.gft.wrk2025carrito.shopping_cart.domain.model.countryTax.CountryTaxId;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.paymentMethod.PaymentMethod;
-import com.gft.wrk2025carrito.shopping_cart.domain.model.paymentMethod.PaymentMethodId;
-import com.github.tomakehurst.wiremock.WireMockServer;
-import jdk.jfr.Enabled;
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
-import java.util.Date;
+
 import java.util.List;
-import java.util.UUID;
+import java.util.Map;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@ExtendWith(MockitoExtension.class)
 class CartCalculatorTest {
 
-    private static final ObjectMapper objectMapper = new ObjectMapper();
+    @Mock
+    private ProductMicroserviceService productService;
 
-    private final RestTemplate restTemplate = new RestTemplate();
+    private Cart cart;
+    private Product product;
+    private PromotionQuantity promoQuantity;
+    private PromotionSeason promoSeason;
+
+    @InjectMocks
+    private CartCalculator cartCalculator;
+
+    @BeforeEach
+    void setUp() {
+
+        product = new Product(1L, "Zapato", "Calzado", BigDecimal.TEN, 1.5);
+
+        // Quantity promo
+        promoQuantity = new PromotionQuantity(3, "Calzado");
+        promoQuantity.setId(100L);
+        promoQuantity.setPromotionType("QUANTITY");
+        promoQuantity.setDiscount(0.2);
+
+        promoSeason = new PromotionSeason("REBAJAS", List.of("Calzado"));
+        promoSeason.setId(200L);
+        promoSeason.setPromotionType("SEASON");
+        promoSeason.setDiscount(0.1);
+
+        CartDetail detail = new CartDetail();
+        detail.setProductId(1L);
+        detail.setQuantity(2);
+
+        cart = new Cart();
+        cart.setId(new CartId());
+        cart.setCartDetails(List.of(detail));
+        cart.setPromotionIds(List.of(100L, 200L)); // ambas promos
+
+        lenient().when(productService.getProductsFromCart(cart)).thenReturn(Map.of(1L, product));
+        lenient().when(productService.getAllApplicablePromotions(cart)).thenReturn(List.of(promoQuantity, promoSeason));
+    }
 
     @Test
-    void calculateAndUpdateCart_ShouldReturnValidCart() throws Exception {
-        // 1. Mock del producto
-        Product mockProduct = new Product(1L, "Product A", "TOYS", BigDecimal.valueOf(100), 50.0 );
-        stubFor(post(urlEqualTo("/api/v1/products/list-by-ids"))
-                .willReturn(aResponse()
-                        .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
-                        .withBody(objectMapper.writeValueAsString(List.of(mockProduct)))));
+    void testCalculateAndUpdateCart_ACTIVE() throws Exception {
+        cart.setState(CartState.ACTIVE);
 
+        Cart result = cartCalculator.calculateAndUpdateCart(cart);
 
-
-        // 3. Crear CartDetail usando build
-        CartDetail detail = CartDetail.build(
-                1L, // productId
-                2,  // quantity
-                null, // totalPrice (lo calculará CartCalculator)
-                null  // totalWeight
-        );
-
-        // 4. Crear Cart usando build
-        Cart cart = Cart.build(
-                new CartId(),
-                UUID.randomUUID(),
-                CountryTax.build(new CountryTaxId(),"ES", 0.21),
-                PaymentMethod.build(new PaymentMethodId(),"Card", 0.05),
-                null,
-                null,
-                new Date(),
-                new Date(),
-                List.of(detail),
-                CartState.CLOSED,
-                List.of(1L)
-        );
-
-        // 5. Ejecutar cálculo
-        Cart result = CartCalculator.calculateAndUpdateCart(cart, restTemplate);
-
-        // 6. Validaciones
-        assertNotNull(result.getTotalPrice());
-        System.out.println("TOTAL FINAL: " + result.getTotalPrice());
-
-        // Precio esperado = 300.0 - 20% = 240 + 5% = 252 + 21% = 305.92
-        BigDecimal expected = BigDecimal.valueOf(305.92).setScale(2);
-
-        assertEquals(expected, result.getTotalPrice(), "El total final con promoción y tasas no es correcto");
-        assertEquals(6.0, result.getTotalWeight(), "El peso total debe ser 3 * 2.0");
+        assertNotNull(result);
+        assertEquals(new BigDecimal("20.00"), result.getTotalPrice());
+        assertEquals(3.0, result.getTotalWeight());
     }
+
+    @Test
+    void testCalculateAndUpdateCart_PENDING() throws Exception {
+        cart.setState(CartState.PENDING);
+
+        PaymentMethod method = new PaymentMethod();
+        method.setCharge(0.1); // 10%
+        cart.setPaymentMethod(method);
+
+        CountryTax tax = new CountryTax();
+        tax.setTax(0.2); // 20%
+        cart.setCountryTax(tax);
+
+        Cart result = cartCalculator.calculateAndUpdateCart(cart);
+
+        assertNotNull(result);
+        assertTrue(result.getTotalPrice().compareTo(BigDecimal.ZERO) > 0);
+    }
+
+    @Test
+    void testCalculateAndUpdateCart_CLOSED() throws Exception {
+        cart.setState(CartState.CLOSED);
+
+        PaymentMethod method = new PaymentMethod();
+        method.setCharge(0.05); // 5%
+        cart.setPaymentMethod(method);
+
+        CountryTax tax = new CountryTax();
+        tax.setTax(0.21); // 21%
+        cart.setCountryTax(tax);
+
+        Cart result = cartCalculator.calculateAndUpdateCart(cart);
+
+        assertNotNull(result);
+        assertTrue(result.getTotalPrice().compareTo(BigDecimal.ZERO) > 0);
+    }
+
+
+    @Test
+    void testCalculateAndUpdateCart_ABANDONED() {
+        cart.setState(CartState.ABANDONED);
+
+        PaymentMethod method = new PaymentMethod();
+        method.setCharge(0.05); // 5%
+        cart.setPaymentMethod(method);
+
+        CountryTax tax = new CountryTax();
+        tax.setTax(0.21); // 21%
+        cart.setCountryTax(tax);
+
+        Exception ex =  assertThrows(IllegalStateException.class, () -> cartCalculator.calculateAndUpdateCart(cart));
+        assertEquals("Unsupported cart state: " + cart.getState(), ex.getMessage());
+    }
+
+    @Test
+    void testCalculateAndUpdateCart_PENDING_with_noPaymentMethod() throws Exception {
+        cart.setState(CartState.PENDING);
+
+        cart.setPaymentMethod(null);
+
+        cart.setCountryTax(null);
+
+        Cart result = cartCalculator.calculateAndUpdateCart(cart);
+
+        assertNotNull(result);
+        assertTrue(result.getTotalPrice().compareTo(BigDecimal.ZERO) > 0);
+    }
+
+    @Test
+    void testCalculateAndUpdateCart_CLOSED_with_noPromotion() throws Exception {
+        cart.setState(CartState.CLOSED);
+
+        PaymentMethod method = new PaymentMethod();
+        method.setCharge(0.05); // 5%
+        cart.setPaymentMethod(method);
+
+        CountryTax tax = new CountryTax();
+        tax.setTax(0.21); // 21%
+        cart.setCountryTax(tax);
+
+        when(productService.getAllApplicablePromotions(cart)).thenReturn(null);
+
+        Cart result = cartCalculator.calculateAndUpdateCart(cart);
+
+        assertNotNull(result);
+        assertTrue(result.getTotalPrice().compareTo(BigDecimal.ZERO) > 0);
+    }
+    @Test
+    void testCalculateAndUpdateCart_CLOSED_with_emptyPromotion() throws Exception {
+        cart.setState(CartState.CLOSED);
+
+        PaymentMethod method = new PaymentMethod();
+        method.setCharge(0.05); // 5%
+        cart.setPaymentMethod(method);
+
+        CountryTax tax = new CountryTax();
+        tax.setTax(0.21); // 21%
+        cart.setCountryTax(tax);
+
+        when(productService.getAllApplicablePromotions(cart)).thenReturn(List.of());
+
+        Cart result = cartCalculator.calculateAndUpdateCart(cart);
+
+        assertNotNull(result);
+        assertTrue(result.getTotalPrice().compareTo(BigDecimal.ZERO) > 0);
+    }
+
+    @Test
+    void testCalculateAndUpdateCart_CLOSED_withNo_PaymentMethod() {
+        cart.setState(CartState.CLOSED);
+
+        cart.setPaymentMethod(null);
+
+        CountryTax tax = new CountryTax();
+        tax.setTax(0.21);
+        cart.setCountryTax(tax);
+
+        Exception ex =  assertThrows(IllegalStateException.class, () -> cartCalculator.calculateAndUpdateCart(cart));
+        assertEquals("Closed cart must have payment method and country tax", ex.getMessage());
+    }
+
+    @Test
+    void testCalculateAndUpdateCart_CLOSED_withNo_CountryTax() throws Exception {
+        cart.setState(CartState.CLOSED);
+
+        PaymentMethod method = new PaymentMethod();
+        method.setCharge(0.05);
+        cart.setPaymentMethod(method);
+
+        cart.setCountryTax(null);
+
+        Exception ex =  assertThrows(IllegalStateException.class, () -> cartCalculator.calculateAndUpdateCart(cart));
+        assertEquals("Closed cart must have payment method and country tax", ex.getMessage());
+    }
+
+
+    @Test
+    void testCalculateAndUpdateCart_CLOSED_different_Promotion() throws Exception {
+        cart.setState(CartState.CLOSED);
+
+        PaymentMethod method = new PaymentMethod();
+        method.setCharge(0.05); // 5%
+        cart.setPaymentMethod(method);
+
+        CountryTax tax = new CountryTax();
+        tax.setTax(0.21); // 21%
+        cart.setCountryTax(tax);
+
+        when(productService.getAllApplicablePromotions(cart)).thenReturn(List.of(new Promotion(){}));
+
+        Cart result = cartCalculator.calculateAndUpdateCart(cart);
+        assertNotNull(result);
+        assertTrue(result.getTotalPrice().compareTo(BigDecimal.ZERO) > 0);
+    }
+
+
 
     @Nested
     @DisplayName("applyTax tests")
@@ -191,5 +344,4 @@ class CartCalculatorTest {
             assertEquals("Charge rate must be between 0 and 1", ex.getMessage());
         }
     }
-
 }

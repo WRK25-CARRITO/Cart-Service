@@ -7,6 +7,7 @@ import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.Cart;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cartDetail.CartDetail;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Map;
 
 public class PromotionQuantityStrategy implements PromotionStrategy {
@@ -35,11 +36,11 @@ public class PromotionQuantityStrategy implements PromotionStrategy {
             if (product.getCategory().equals(quantityPromo.getCategory()) && totalCategoryQuantity >= quantityPromo.getQuantity()) {
                 baseLineTotal = baseLineTotal.multiply(BigDecimal.ONE.subtract(BigDecimal.valueOf(quantityPromo.getDiscount())));
             }
-
+            detail.setTotalPrice(baseLineTotal);
             total = total.add(baseLineTotal);
         }
 
-        return total;
+        return total.setScale(2, RoundingMode.HALF_UP);
     }
 
 }

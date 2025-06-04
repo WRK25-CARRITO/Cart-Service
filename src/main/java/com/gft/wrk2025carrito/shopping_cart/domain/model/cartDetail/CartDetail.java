@@ -1,15 +1,13 @@
 package com.gft.wrk2025carrito.shopping_cart.domain.model.cartDetail;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.math.BigDecimal;
 
 @Getter
 @Setter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
+@NoArgsConstructor
 public class CartDetail {
 
     private Long productId;
