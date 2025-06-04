@@ -183,6 +183,7 @@ public class CartServicesImpl implements CartServices {
         return cartRepository.create(cart);
     }
 
+
     private Cart handlePending(Cart cart) {
 
         if (cart.getState() != CartState.ACTIVE) {
@@ -196,6 +197,7 @@ public class CartServicesImpl implements CartServices {
                     "There must be at least one product to change state to PENDING"
             );
         }
+        cart.setState(CartState.PENDING);
 
         Cart updatedCart;
         try {
