@@ -88,6 +88,18 @@
             <version>8.2.0</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.wiremock.integrations</groupId>
+            <artifactId>wiremock-spring-boot</artifactId>
+            <version>3.10.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.instancio</groupId>
+            <artifactId>instancio-core</artifactId>
+            <version>3.6.0</version>
+        </dependency>
+
 
     </dependencies>
 

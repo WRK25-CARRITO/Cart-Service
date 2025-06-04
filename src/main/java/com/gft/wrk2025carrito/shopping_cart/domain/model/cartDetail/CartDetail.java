@@ -1,13 +1,13 @@
 package com.gft.wrk2025carrito.shopping_cart.domain.model.cartDetail;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.*;
 
 import java.math.BigDecimal;
 
 @Getter
+@Setter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
+@NoArgsConstructor
 public class CartDetail {
 
     private Long productId;
@@ -15,7 +15,7 @@ public class CartDetail {
     private BigDecimal totalPrice;
     private Double totalWeight;
 
-    public static CartDetail build(Long productId, int quantity, BigDecimal totalPrice, Double totalWeight) {
+    public static CartDetail build(Long productId, int quantity,  BigDecimal totalPrice, Double totalWeight) {
 
         if(productId == null){
             throw new IllegalArgumentException("Product ID cannot be null");
@@ -33,6 +33,6 @@ public class CartDetail {
             throw new IllegalArgumentException("Quantity cannot be negative");
         }
 
-        return new CartDetail(productId, quantity, totalPrice, totalWeight);
+        return new CartDetail(productId, quantity ,totalPrice, totalWeight);
     }
 }
