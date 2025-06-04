@@ -1,7 +1,6 @@
 package com.gft.wrk2025carrito.shopping_cart.application.service;
 
 import com.gft.wrk2025carrito.shopping_cart.application.dto.CartDTO;
-import com.gft.wrk2025carrito.shopping_cart.application.dto.ProductDTO;
 import com.gft.wrk2025carrito.shopping_cart.application.helper.CartCalculator;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.Cart;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cartDetail.CartDetail;
@@ -198,83 +197,16 @@ public class CartServicesImpl implements CartServices {
             );
         }
 
-        // Request products
-        ResponseEntity<ProductDTO[]> resp = restTemplate.getForEntity(PRODUCTS_URL, ProductDTO[].class);
-        ProductDTO[] allProductsArray = resp.getBody();
-        if (allProductsArray == null) {
-            throw new IllegalArgumentException("Failed to fetch products to compute total");
+        Cart updatedCart;
+        try {
+            updatedCart = cartCalculator.calculateAndUpdateCart(cart, restTemplate);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Error calculating pending totals: " + e.getMessage(), e);
         }
 
-        List<ProductDTO> allProducts = Arrays.asList(allProductsArray);
+        cartRepository.save(cartFactory.toEntity(updatedCart));
 
-        Map<Long, Integer> quantities = cart.getCartDetails().stream()
-                .collect(Collectors.toMap(
-                        CartDetail::getProductId,
-                        CartDetail::getQuantity,
-                        Integer::sum
-                ));
-        Set<Long> cartProductsIds = quantities.keySet();
-
-        // matching products
-        List<ProductDTO> inCartProducts = allProducts.stream()
-                .filter(requestProduct -> cartProductsIds.contains(requestProduct.id()))
-                .toList();
-
-        // matching products equal size as cart products
-        if (inCartProducts.size() != cartProductsIds.size()) {
-            throw new IllegalArgumentException("One or more product IDs in the cart are invalid");
-        }
-
-        // calcular el precio y peso de cada cartDetail
-        List<CartDetail> cartDetailsList = quantities.entrySet().stream()
-                .map(entry -> {
-                    Long productId = entry.getKey();
-                    int quantity = entry.getValue();
-
-                    // Encontrar el ProductDTO concreto
-                    ProductDTO productDTO = inCartProducts.stream()
-                            .filter(p -> p.id().equals(productId))
-                            .findFirst()
-                            .orElseThrow(); // Ya no puede fallar porque comprobamos tamaños arriba
-
-                    BigDecimal unitPrice = productDTO.price();
-                    double unitWeight  = productDTO.weight();
-
-                    // Calcular totales por línea
-                    BigDecimal totalPriceDetalle = unitPrice.multiply(BigDecimal.valueOf(quantity));
-                    double totalWeightDetalle = unitWeight * quantity;
-
-                    return CartDetail.build(productId, quantity, totalPriceDetalle, totalWeightDetalle);
-                })
-                .toList();
-
-        // Calculate total price
-        BigDecimal totalPrice = cartDetailsList.stream()
-                .map(CartDetail::getTotalPrice)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        double totalWeight = cartDetailsList.stream()
-                .mapToDouble(CartDetail::getTotalWeight)
-                .sum();
-
-        BigDecimal shippingCost = cartCalculator.calculateShippingCost(totalWeight);
-        totalPrice = totalPrice.add(shippingCost);
-
-        // OBTENER PROMOCIONES
-        //
-        // ResponseEntity<Long[]> promoResp = restTemplate.getForEntity(PROMOTIONS_URL, Long[].class);
-        // Long[] promoArray = promoResp.getBody();
-        // List<Long> promotionsIds = List.of(promoArray);
-        List<Long> promotionsIds = Collections.emptyList();
-
-        cart.setCartDetails(cartDetailsList);
-        cart.setTotalPrice(totalPrice);
-        cart.setTotalWeight(totalWeight);
-        cart.setPromotionIds(promotionsIds);
-        cart.setState(CartState.PENDING);
-
-        cartRepository.save(cartFactory.toEntity(cart));
-        return cart;
+        return updatedCart;
     }
 
     private Cart handleClosed(Cart cart, CartDTO cartDTO) {
@@ -299,83 +231,20 @@ public class CartServicesImpl implements CartServices {
             );
         }
 
-        // recuperar todos los productos para recalcular totales
-        ResponseEntity<ProductDTO[]> resp = restTemplate.getForEntity(PRODUCTS_URL, ProductDTO[].class);
-        ProductDTO[] allProductsArray = resp.getBody();
-        if (allProductsArray == null) {
-            throw new IllegalArgumentException("Failed to fetch products to compute total");
-        }
-        List<ProductDTO> allProducts = Arrays.asList(allProductsArray);
-
-        Map<Long, Integer> quantities = cart.getCartDetails().stream()
-                .collect(Collectors.toMap(
-                        CartDetail::getProductId,
-                        CartDetail::getQuantity,
-                        Integer::sum
-                ));
-        Set<Long> cartProductsIds = quantities.keySet();
-
-        // Filtramos sólo los que están en el carrito
-        List<ProductDTO> inCartProducts = allProducts.stream()
-                .filter(requestProduct -> cartProductsIds.contains(requestProduct.id()))
-                .toList();
-
-        if (inCartProducts.size() != cartProductsIds.size()) {
-            throw new IllegalArgumentException("One or more product IDs in the cart are invalid");
-        }
-
-        // calcular el precio y peso de cada cartDetail
-        List<CartDetail> cartDetailsList = quantities.entrySet().stream()
-                .map(entry -> {
-                    Long productId = entry.getKey();
-                    int quantity = entry.getValue();
-
-                    ProductDTO productDTO = inCartProducts.stream()
-                            .filter(p -> p.id().equals(productId))
-                            .findFirst()
-                            .orElseThrow();
-
-                    BigDecimal unitPrice = productDTO.price();
-                    double unitWeight  = productDTO.weight();
-
-                    BigDecimal totalPriceCartDetail = unitPrice.multiply(BigDecimal.valueOf(quantity));
-                    double totalWeightCartDetail = unitWeight * quantity;
-
-                    return CartDetail.build(productId, quantity, totalPriceCartDetail, totalWeightCartDetail);
-                })
-                .toList();
-
-        // calcular precio del carrito
-        BigDecimal rawPrice = cartDetailsList.stream()
-                .map(CartDetail::getTotalPrice)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        double totalWeight = cartDetailsList.stream()
-                .mapToDouble(CartDetail::getTotalWeight)
-                .sum();
-
-        BigDecimal shippingCost = cartCalculator.calculateShippingCost(totalWeight);
-        BigDecimal pricePlusShipping = rawPrice.add(shippingCost);
-
-        // Aplicar impuestos y cargos
-        BigDecimal priceAfterTax;
-        BigDecimal priceAfterCharge;
-        try {
-            priceAfterTax    = cartCalculator.applyTax(pricePlusShipping, newCountryTax.getTax());
-            priceAfterCharge = cartCalculator.applyCharge(priceAfterTax, newPaymentMethod.getCharge());
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Error applying tax/charge: " + e.getMessage(), e);
-        }
-
-        cart.setTotalPrice(priceAfterCharge);
-        cart.setTotalWeight(totalWeight);
         cart.setCountryTax(newCountryTax);
         cart.setPaymentMethod(newPaymentMethod);
         cart.setState(CartState.CLOSED);
-        cart.setUpdatedAt(new Date());
 
-        cartRepository.save(cartFactory.toEntity(cart));
-        return cart;
+        Cart updatedCart;
+        try {
+            updatedCart = cartCalculator.calculateAndUpdateCart(cart, restTemplate);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Error calculating closed totals: " + e.getMessage(), e);
+        }
+
+        updatedCart.setUpdatedAt(new Date());
+        cartRepository.save(cartFactory.toEntity(updatedCart));
+        return updatedCart;
     }
 
 }

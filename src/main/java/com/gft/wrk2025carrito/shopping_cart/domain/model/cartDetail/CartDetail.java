@@ -3,10 +3,12 @@ package com.gft.wrk2025carrito.shopping_cart.domain.model.cartDetail;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 
 @Getter
+@Setter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class CartDetail {
 
