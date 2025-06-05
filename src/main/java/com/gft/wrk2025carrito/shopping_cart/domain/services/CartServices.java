@@ -1,5 +1,6 @@
 package com.gft.wrk2025carrito.shopping_cart.domain.services;
 
+import com.gft.wrk2025carrito.shopping_cart.application.dto.CartDTO;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.Cart;
 
 import java.util.List;
@@ -27,6 +28,8 @@ public interface CartServices {
     List<Cart> getAll();
 
     Cart getById(UUID id);
+
+    Cart updateState(UUID cartId, CartDTO cartDTO);
 
     Cart showTotalPriceAndWeight(UUID id) throws Exception;
 }
