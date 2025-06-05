@@ -68,6 +68,13 @@ class CartControllerTest {
     }
 
     @Test
+    void should_Show_Successfully() throws Exception {
+        UUID id = UUID.randomUUID();
+        controller.getCartWithTotalPrice(id);
+        verify(cartServices).showTotalPriceAndWeight(id);
+    }
+
+    @Test
     void should_UpdateCartState_Successfully() {
         UUID cartId = UUID.randomUUID();
         CartDTO dto = new CartDTO(CartState.PENDING, null, null);
