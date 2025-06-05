@@ -70,15 +70,16 @@ public class CartControllerIT {
 
     @BeforeEach
     void setUp() {
-        existingCartId = UUID.fromString("4d82b684-7131-4ba4-864d-465fc290708b");
+        activeCartId = UUID.fromString("4d82b684-7131-4ba4-864d-465fc290708b");
+        pendingCartId = UUID.fromString("bdbfb686-3fc4-4a3b-9f70-df76cdff0791");
         existingUserId = UUID.fromString("b96124a9-69a6-4859-acc7-5708ab07cd80");
         assertFalse(cartRepository.findByUserId(existingUserId).isEmpty());
-        assertTrue(cartRepository.existsById(existingCartId));
+        assertTrue(cartRepository.existsById(activeCartId));
     }
 
     @Test
     void should_Return204_whenGettingAllCarts() throws Exception {
-        mockMvc.perform(get("/carts")).andExpect(status().isOk());
+        mockMvc.perform(get("/api/v1/carts")).andExpect(status().isOk());
 
         assertFalse(cartRepository.findAll().isEmpty());
     }
@@ -86,15 +87,14 @@ public class CartControllerIT {
     @Test
     void should_Return204_whenGettingCartById() throws Exception {
         activeCartId = UUID.fromString("4d82b684-7131-4ba4-864d-465fc290708b");
-        mockMvc.perform(get("/carts/" + activeCartId)).andExpect(status().isOk());
+        mockMvc.perform(get("/api/v1/carts/" + activeCartId)).andExpect(status().isOk());
 
         assertTrue(cartRepository.findById(activeCartId).isPresent());
     }
 
     @Test
     void should_Return204_AndDeleteCartById_WhenExists() throws Exception {
-        mockMvc.perform(delete("/carts/" + activeCartId))
-        mockMvc.perform(delete("/api/v1/carts/" + existingCartId))
+        mockMvc.perform(delete("/api/v1/carts/" + activeCartId))
                 .andExpect(status().isNoContent());
 
         assertFalse(cartRepository.existsById(activeCartId));
@@ -170,7 +170,7 @@ public class CartControllerIT {
 
         String json = objectMapper.writeValueAsString(invalidProducts);
 
-        mockMvc.perform(put("/api/v1/carts/{id}", existingCartId)
+        mockMvc.perform(put("/api/v1/carts/{id}", activeCartId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
                 .andExpect(status().isBadRequest());
@@ -182,7 +182,7 @@ public class CartControllerIT {
 
         String json = objectMapper.writeValueAsString(invalidProducts);
 
-        mockMvc.perform(put("/api/v1/carts/{id}", existingCartId)
+        mockMvc.perform(put("/api/v1/carts/{id}", activeCartId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
                 .andExpect(status().isBadRequest());
@@ -202,7 +202,7 @@ public class CartControllerIT {
 
     @Test
     void should_Return400_whenCartIdInvalid() throws Exception {
-        mockMvc.perform(put("/carts/confirm/invalid-uuid")
+        mockMvc.perform(put("/api/v1/carts/confirm/invalid-uuid")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
                 .andExpect(status().isBadRequest());
@@ -214,7 +214,7 @@ public class CartControllerIT {
         CartDTO dto = new CartDTO(null, null, null);
         String bodyJson = objectMapper.writeValueAsString(dto);
 
-        mockMvc.perform(put("/carts/confirm/" + randomId)
+        mockMvc.perform(put("/api/v1/carts/confirm/" + randomId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(bodyJson))
                 .andExpect(status().isBadRequest());
@@ -236,7 +236,7 @@ public class CartControllerIT {
         );
         String bodyJson = objectMapper.writeValueAsString(dto);
 
-        mockMvc.perform(put("/carts/confirm/" + activeCartId)
+        mockMvc.perform(put("/api/v1/carts/confirm/" + activeCartId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(bodyJson))
                 .andExpect(status().isOk())
@@ -264,7 +264,7 @@ public class CartControllerIT {
         String json = objectMapper.writeValueAsString(dto);
 
         mockMvc.perform(
-                        put("/carts/confirm/" + pendingCartId)
+                        put("/api/v1/carts/confirm/" + pendingCartId)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(json)
                 )
@@ -279,7 +279,7 @@ public class CartControllerIT {
 
     @Test
     void should_Return400_whenRequestBodyMissingRequiredFields() throws Exception {
-        mockMvc.perform(put("/carts/confirm/" + activeCartId)
+        mockMvc.perform(put("/api/v1/carts/confirm/" + activeCartId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
                 .andExpect(status().isBadRequest());
@@ -287,9 +287,11 @@ public class CartControllerIT {
 
     @Test
     void should_Return200_WhenGettingCalculatedCartById() throws Exception {
-        mockMvc.perform(get("/api/v1/carts/calculated/" + existingCartId)
+        mockMvc.perform(get("/api/v1/carts/calculated/" + activeCartId)
                         .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk()).andReturn();
+                .andExpect(status().isOk()).andExpect(jsonPath("$.id.id", is(activeCartId.toString())))
+                .andExpect(jsonPath("$.totalPrice", is(95.73)))
+                .andExpect(jsonPath("$.totalWeight", is(0.9)));
 
     }
 
