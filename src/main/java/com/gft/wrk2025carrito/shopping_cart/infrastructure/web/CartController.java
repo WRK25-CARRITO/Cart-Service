@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/carts")
+@RequestMapping("api/v1/carts")
 @RequiredArgsConstructor
 public class CartController {
 
@@ -27,6 +27,12 @@ public class CartController {
     @ResponseStatus(HttpStatus.OK)
     public Cart getById(@PathVariable UUID id) {
         return cartServices.getById(id);
+    }
+
+    @GetMapping("/calculated/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public Cart getCartWithTotalPrice(@PathVariable UUID id) throws Exception {
+        return cartServices.showTotalPriceAndWeight(id);
     }
 
     @DeleteMapping("/{id}")

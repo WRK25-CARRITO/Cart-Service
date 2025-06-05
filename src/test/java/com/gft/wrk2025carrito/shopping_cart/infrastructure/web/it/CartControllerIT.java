@@ -19,6 +19,9 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+
+
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -48,7 +51,7 @@ public class CartControllerIT {
 
     @Test
     void should_Return204_whenGettingAllCarts() throws Exception {
-        mockMvc.perform(get("/carts")).andExpect(status().isOk());
+        mockMvc.perform(get("/api/v1/carts")).andExpect(status().isOk());
 
         assertFalse(cartRepository.findAll().isEmpty());
     }
@@ -56,14 +59,14 @@ public class CartControllerIT {
     @Test
     void should_Return204_whenGettingCartById() throws Exception {
         existingCartId = UUID.fromString("4d82b684-7131-4ba4-864d-465fc290708b");
-        mockMvc.perform(get("/carts/" + existingCartId)).andExpect(status().isOk());
+        mockMvc.perform(get("/api/v1/carts/" + existingCartId)).andExpect(status().isOk());
 
         assertTrue(cartRepository.findById(existingCartId).isPresent());
     }
 
     @Test
     void should_Return204_AndDeleteCartById_WhenExists() throws Exception {
-        mockMvc.perform(delete("/carts/" + existingCartId))
+        mockMvc.perform(delete("/api/v1/carts/" + existingCartId))
                 .andExpect(status().isNoContent());
 
         assertFalse(cartRepository.existsById(existingCartId));
@@ -73,13 +76,13 @@ public class CartControllerIT {
     void should_Return404_WhenDeletingNonExistentCartById() throws Exception {
         UUID nonexistentId = UUID.randomUUID();
 
-        mockMvc.perform(delete("/carts/" + nonexistentId))
+        mockMvc.perform(delete("/api/v1/carts/" + nonexistentId))
                 .andExpect(status().isNotFound());
     }
 
     @Test
     void should_Return204_AndDeleteAllCartsByUser_WhenExists() throws Exception {
-        mockMvc.perform(delete("/carts/user/" + existingUserId))
+        mockMvc.perform(delete("/api/v1/carts/user/" + existingUserId))
                 .andExpect(status().isNoContent());
 
         assertTrue(cartRepository.findByUserId(existingUserId).isEmpty());
@@ -89,19 +92,19 @@ public class CartControllerIT {
     void should_Return404_WhenDeletingCartsByUserIdThatHasNoCarts() throws Exception {
         UUID noCartUserId = UUID.randomUUID();
 
-        mockMvc.perform(delete("/carts/user/" + noCartUserId))
+        mockMvc.perform(delete("/api/v1/carts/user/" + noCartUserId))
                 .andExpect(status().isNotFound());
     }
 
     @Test
     void should_Return400_WhenDeletingCartByInvalidId() throws Exception {
-        mockMvc.perform(delete("/carts/invalid-uuid"))
+        mockMvc.perform(delete("/api/v1/carts/invalid-uuid"))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
     void should_Return400_WhenDeletingByUserIdInvalidUUID() throws Exception {
-        mockMvc.perform(delete("/carts/user/invalid-uuid"))
+        mockMvc.perform(delete("/api/v1/carts/user/invalid-uuid"))
                 .andExpect(status().isBadRequest());
     }
 
@@ -109,7 +112,7 @@ public class CartControllerIT {
     void should_Return201_WhenCreatingCartSuccessfully() throws Exception {
         UUID userId = UUID.randomUUID();
 
-        mockMvc.perform(post("/carts")
+        mockMvc.perform(post("/api/v1/carts")
                         .param("userId", userId.toString())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated());
@@ -118,7 +121,7 @@ public class CartControllerIT {
 
     @Test
     void should_Return400_WhenCreatingCartWithInvalidUUID() throws Exception {
-        mockMvc.perform(post("/carts")
+        mockMvc.perform(post("/api/v1/carts")
                         .param("userId", "invalid-uuid"))
                 .andExpect(status().isBadRequest());
     }
@@ -128,7 +131,7 @@ public class CartControllerIT {
     void should_Return400_WhenCartAlreadyExistsInActive() throws Exception {
         UUID userId = UUID.fromString("2f05a6f9-87dc-4ea5-a23c-b05265055334");
 
-        mockMvc.perform(post("/carts")
+        mockMvc.perform(post("/api/v1/carts")
                         .param("userId", userId.toString()))
                 .andExpect(status().isBadRequest());
     }
@@ -139,7 +142,7 @@ public class CartControllerIT {
 
         String json = objectMapper.writeValueAsString(invalidProducts);
 
-        mockMvc.perform(put("/carts/{id}", existingCartId)
+        mockMvc.perform(put("/api/v1/carts/{id}", existingCartId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
                 .andExpect(status().isBadRequest());
@@ -151,7 +154,7 @@ public class CartControllerIT {
 
         String json = objectMapper.writeValueAsString(invalidProducts);
 
-        mockMvc.perform(put("/carts/{id}", existingCartId)
+        mockMvc.perform(put("/api/v1/carts/{id}", existingCartId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
                 .andExpect(status().isBadRequest());
@@ -163,9 +166,32 @@ public class CartControllerIT {
 
         String json = objectMapper.writeValueAsString(validProducts);
 
-        mockMvc.perform(put("/carts/{id}", "invalid-uuid")
+        mockMvc.perform(put("/api/v1/carts/{id}", "invalid-uuid")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void should_Return200_WhenGettingCalculatedCartById() throws Exception {
+        mockMvc.perform(get("/api/v1/carts/calculated/" + existingCartId)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk()).andReturn();
+
+    }
+
+    @Test
+    void should_Return400_WhenCalculatedCartByInvalidId() throws Exception {
+        mockMvc.perform(get("/api/v1/carts/calculated/invalid-uuid")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void should_Return400_WhenCalculatedCartNotFound() throws Exception {
+        UUID nonexistentId = UUID.randomUUID();
+        mockMvc.perform(get("/api/v1/carts/calculated/" + nonexistentId)
+                        .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
     }
 

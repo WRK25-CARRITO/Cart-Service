@@ -63,4 +63,11 @@ class CartControllerTest {
         verify(cartServices).createCart(id);
     }
 
+    @Test
+    void should_Show_Successfully() throws Exception {
+        UUID id = UUID.randomUUID();
+        controller.getCartWithTotalPrice(id);
+        verify(cartServices).showTotalPriceAndWeight(id);
+    }
+
 }
