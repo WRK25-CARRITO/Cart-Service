@@ -30,7 +30,6 @@ public class RabbitMQProductStockChangedConsumer {
 
         List<Cart> activeCarts = cartServices.getAllActiveCarts();
 
-        System.out.println("SIZE: " + activeCarts.size());
         for(Cart cart : activeCarts){
 
             for(CartDetail cartDetail : cart.getCartDetails()){
