@@ -1,11 +1,18 @@
 package com.gft.wrk2025carrito.shopping_cart.application.service;
 
+import com.gft.wrk2025carrito.shopping_cart.application.dto.CartDTO;
+import com.gft.wrk2025carrito.shopping_cart.application.helper.CartCalculator;
+import com.gft.wrk2025carrito.shopping_cart.application.service.client.OrderMicroserviceService;
 import com.gft.wrk2025carrito.shopping_cart.application.helper.CartCalculator;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.Cart;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.CartId;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.CartState;
+import com.gft.wrk2025carrito.shopping_cart.domain.model.cartDetail.CartDetail;
+import com.gft.wrk2025carrito.shopping_cart.domain.model.countryTax.CountryTax;
+import com.gft.wrk2025carrito.shopping_cart.domain.model.paymentMethod.PaymentMethod;
 import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.factory.CartFactory;
 import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.repository.impl.CartEntityRepositoryImpl;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -42,8 +49,42 @@ class CartServicesImplTest {
     @Mock
     private CartCalculator cartCalculator;
 
+    @Mock
+    private OrderMicroserviceService orderMicroserviceService;
+
     @InjectMocks
     private CartServicesImpl cartService;
+
+    private UUID sharedCartId;
+    private Cart baseCart;
+    private CartDTO dtoPending;
+    private CartDTO dtoClosed;
+    private Cart mockPendingCart;
+    private Cart mockClosedCart;
+    private CountryTax countryTaxMock;
+    private PaymentMethod paymentMethodMock;
+
+    @BeforeEach
+    void setUp() {
+        sharedCartId = UUID.randomUUID();
+
+        baseCart = mock(Cart.class);
+
+        dtoPending = new CartDTO(CartState.PENDING, null, null);
+
+        countryTaxMock      = mock(CountryTax.class);
+        paymentMethodMock   = mock(PaymentMethod.class);
+        dtoClosed = new CartDTO(CartState.CLOSED, countryTaxMock, paymentMethodMock);
+
+        mockPendingCart = mock(Cart.class);
+        lenient().when(mockPendingCart.getState()).thenReturn(CartState.PENDING);
+
+        mockClosedCart = mock(Cart.class);
+        lenient().when(mockClosedCart.getState()).thenReturn(CartState.CLOSED);
+
+        lenient().when(repository.existsById(sharedCartId)).thenReturn(true);
+        lenient().when(repository.findById(sharedCartId)).thenReturn(baseCart);
+    }
 
     @Test
     void getAllCarts_ok() {
@@ -57,13 +98,12 @@ class CartServicesImplTest {
 
     @Test
     void getCartById_ok() {
-        UUID id = UUID.randomUUID();
         Cart mockCart = mock(Cart.class);
 
-        when(repository.existsById(id)).thenReturn(true);
-        when(repository.findById(id)).thenReturn(mockCart);
+        when(repository.existsById(sharedCartId)).thenReturn(true);
+        when(repository.findById(sharedCartId)).thenReturn(mockCart);
 
-        Cart cart = cartService.getById(id);
+        Cart cart = cartService.getById(sharedCartId);
 
         assertNotNull(cart);
         assertEquals(mockCart, cart);
@@ -76,11 +116,9 @@ class CartServicesImplTest {
 
     @Test
     void getCartById_notFound() {
-        UUID id = UUID.randomUUID();
+        when(repository.existsById(sharedCartId)).thenReturn(false);
 
-        when(repository.existsById(id)).thenReturn(false);
-
-        assertThrows(IllegalArgumentException.class, () -> cartService.getById(id));
+        assertThrows(IllegalArgumentException.class, () -> cartService.getById(sharedCartId));
     }
 
     @Test
@@ -90,20 +128,18 @@ class CartServicesImplTest {
 
     @Test
     void should_throwException_whenCartNotExists() {
-        UUID id = UUID.randomUUID();
-        when(repository.existsById(id)).thenReturn(false);
+        when(repository.existsById(sharedCartId)).thenReturn(false);
 
-        assertThrows(IllegalStateException.class, () -> cartService.delete(id));
+        assertThrows(IllegalStateException.class, () -> cartService.delete(sharedCartId));
     }
 
     @Test
     void should_deleteCart_whenExists() {
-        UUID id = UUID.randomUUID();
-        when(repository.existsById(id)).thenReturn(true);
+        when(repository.existsById(sharedCartId)).thenReturn(true);
 
-        cartService.delete(id);
+        cartService.delete(sharedCartId);
 
-        verify(repository, times(1)).deleteById(id);
+        verify(repository, times(1)).deleteById(sharedCartId);
     }
 
     @Test
@@ -113,33 +149,30 @@ class CartServicesImplTest {
 
     @Test
     void should_throwException_whenCartByUser_notExists() {
-        UUID id = UUID.randomUUID();
-        when(repository.findByUserId(id)).thenReturn(Collections.emptyList());
+        when(repository.findByUserId(sharedCartId)).thenReturn(Collections.emptyList());
 
-        assertThrows(IllegalStateException.class, () -> cartService.deleteAllByUserId(id));
+        assertThrows(IllegalStateException.class, () -> cartService.deleteAllByUserId(sharedCartId));
     }
 
     @Test
     void should_deleteCartByUser_whenExists() {
-        UUID id = UUID.randomUUID();
         List<Cart> carts = List.of(mock(Cart.class));
-        when(repository.findByUserId(id)).thenReturn(carts);
+        when(repository.findByUserId(sharedCartId)).thenReturn(carts);
 
-        cartService.deleteAllByUserId(id);
+        cartService.deleteAllByUserId(sharedCartId);
 
-        verify(repository, times(1)).deleteAllByUserId(id);
+        verify(repository, times(1)).deleteAllByUserId(sharedCartId);
     }
 
     @Test
     void should_updateCart_whenExists() {
-        UUID cartId = UUID.randomUUID();
         Long productId = 1L;
         Map<Long, Integer> productData = Map.of(productId, 3);
 
         Cart existingCart = mock(Cart.class);
 
-        when(repository.existsById(cartId)).thenReturn(true);
-        when(repository.findById(cartId)).thenReturn(existingCart);
+        when(repository.existsById(sharedCartId)).thenReturn(true);
+        when(repository.findById(sharedCartId)).thenReturn(existingCart);
         when(repository.save(any())).thenReturn(existingCart);
 
         Object[] fakeProductResponse = new Object[]{ new Object() };
@@ -150,7 +183,7 @@ class CartServicesImplTest {
                 eq(Object[].class))
         ).thenReturn(new ResponseEntity<>(fakeProductResponse, HttpStatus.OK));
 
-        cartService.update(cartId, productData);
+        cartService.update(sharedCartId, productData);
 
         verify(existingCart).setCartDetails(any());
         verify(repository).save(any());
@@ -158,64 +191,60 @@ class CartServicesImplTest {
 
     @Test
     void should_throwException_whenCartStateIsPendingOrClosed() {
-        UUID cartId = UUID.randomUUID();
         Long productId = 1L;
         Map<Long, Integer> productData = Map.of(productId, 3);
 
         Cart cart = mock(Cart.class);
         when(cart.getState()).thenReturn(CartState.PENDING);
-        when(repository.existsById(cartId)).thenReturn(true);
-        when(repository.findById(cartId)).thenReturn(cart);
+        when(repository.existsById(sharedCartId)).thenReturn(true);
+        when(repository.findById(sharedCartId)).thenReturn(cart);
 
-        assertThrows(IllegalArgumentException.class, () -> cartService.update(cartId, productData));
+        assertThrows(IllegalArgumentException.class, () -> cartService.update(sharedCartId, productData));
     }
 
     @Test
     void should_throwException_whenProductIdsMismatch() {
-        UUID cartId = UUID.randomUUID();
         Long productId = 1L;
         Map<Long, Integer> productData = Map.of(productId, 3);
 
         Cart cart = mock(Cart.class);
         when(cart.getState()).thenReturn(CartState.ACTIVE);
-        when(repository.existsById(cartId)).thenReturn(true);
-        when(repository.findById(cartId)).thenReturn(cart);
+        when(repository.existsById(sharedCartId)).thenReturn(true);
+        when(repository.findById(sharedCartId)).thenReturn(cart);
 
         when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(Object[].class)))
                 .thenReturn(new ResponseEntity<>(new Object[0], HttpStatus.OK));
 
-        assertThrows(IllegalArgumentException.class, () -> cartService.update(cartId, productData));
+        assertThrows(IllegalArgumentException.class, () -> cartService.update(sharedCartId, productData));
     }
 
     @Test
     void should_throwException_whenProductResponseIsNull() {
-        UUID cartId = UUID.randomUUID();
         Long productId = 1L;
         Map<Long, Integer> productData = Map.of(productId, 3);
 
         Cart cart = mock(Cart.class);
         when(cart.getState()).thenReturn(CartState.ACTIVE);
-        when(repository.existsById(cartId)).thenReturn(true);
-        when(repository.findById(cartId)).thenReturn(cart);
+        when(repository.existsById(sharedCartId)).thenReturn(true);
+        when(repository.findById(sharedCartId)).thenReturn(cart);
 
         when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(Object[].class)))
                 .thenReturn(new ResponseEntity<>(null, HttpStatus.OK));
 
-        assertThrows(IllegalArgumentException.class, () -> cartService.update(cartId, productData));
+        assertThrows(IllegalArgumentException.class, () -> cartService.update(sharedCartId, productData));
     }
 
     @Test
     void should_throwException_whenCartStateIsClosed() {
-        UUID cartId = UUID.randomUUID();
         Long productId = 1L;
         Map<Long, Integer> productData = Map.of(productId, 3);
 
         Cart cart = mock(Cart.class);
         when(cart.getState()).thenReturn(CartState.CLOSED);
-        when(repository.existsById(cartId)).thenReturn(true);
-        when(repository.findById(cartId)).thenReturn(cart);
+        when(repository.existsById(sharedCartId)).thenReturn(true);
+        when(repository.findById(sharedCartId)).thenReturn(cart);
 
-        assertThrows(IllegalArgumentException.class, () -> cartService.update(cartId, productData));
+        assertThrows(IllegalArgumentException.class, () -> cartService.update(sharedCartId, productData));
     }
 
     @Test
@@ -229,13 +258,12 @@ class CartServicesImplTest {
 
     @Test
     void should_throwException_onUpdate_whenCart_doesNotExist() {
-        UUID cartId = UUID.randomUUID();
         Long productId = 1L;
         Map<Long, Integer> productData = Map.of(productId, 3);
 
-        when(repository.existsById(cartId)).thenReturn(false);
+        when(repository.existsById(sharedCartId)).thenReturn(false);
 
-        assertThrows(IllegalArgumentException.class, () -> cartService.update(cartId, productData));
+        assertThrows(IllegalArgumentException.class, () -> cartService.update(sharedCartId, productData));
     }
 
     @Test
@@ -278,6 +306,444 @@ class CartServicesImplTest {
         assertEquals(userId, result.getUserId());
         assertEquals(CartState.ACTIVE, result.getState());
         verify(repository).create(any(Cart.class));
+    }
+
+    @Test
+    void updateState_ThrowsWhenCartIdIsNull() {
+        CartDTO dto = new CartDTO(CartState.PENDING, null, null);
+        IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> cartService.updateState(null, dto)
+        );
+        assertEquals("Cart id cannot be null", ex.getMessage());
+    }
+
+    @Test
+    void updateState_ThrowsWhenCartDoesNotExist() {
+        UUID fakeId = UUID.randomUUID();
+        when(repository.existsById(fakeId)).thenReturn(false);
+
+        CartDTO dto = new CartDTO(CartState.PENDING, null, null);
+        IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> cartService.updateState(fakeId, dto)
+        );
+        assertEquals("Cart with id " + fakeId + " does not exist", ex.getMessage());
+    }
+
+    @Test
+    void updateState_ThrowsWhenCartDTONull() {
+        UUID someId = UUID.randomUUID();
+        when(repository.existsById(someId)).thenReturn(true);
+
+        IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> cartService.updateState(someId, null)
+        );
+        assertEquals("New cart cannot be null", ex.getMessage());
+    }
+
+    @Test
+    void updateState_ThrowsWhenCurrentStateNotActiveOrPending() {
+        UUID cartId = UUID.randomUUID();
+        Cart fakeCart = mock(Cart.class);
+        when(repository.existsById(cartId)).thenReturn(true);
+        when(repository.findById(cartId)).thenReturn(fakeCart);
+        when(fakeCart.getState()).thenReturn(CartState.CLOSED);
+
+        CartDTO dto = new CartDTO(CartState.PENDING, null, null);
+        IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> cartService.updateState(cartId, dto)
+        );
+        assertEquals(
+                "Cart with id " + cartId + " cannot be updated from state CLOSED",
+                ex.getMessage()
+        );
+    }
+
+    @Test
+    void updateState_ThrowsWhenTargetStateInvalid() {
+        UUID cartId = UUID.randomUUID();
+        Cart fakeCart = mock(Cart.class);
+
+        when(repository.existsById(cartId)).thenReturn(true);
+        when(repository.findById(cartId)).thenReturn(fakeCart);
+        when(fakeCart.getState()).thenReturn(CartState.ACTIVE);
+
+        CartDTO dto = new CartDTO(CartState.ACTIVE, null, null);
+
+        IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> cartService.updateState(cartId, dto)
+        );
+        assertEquals("Cannot update cart state to ACTIVE", ex.getMessage());
+    }
+
+    @Test
+    void updateState_FromActiveToPending_InvokesHandlePendingAndReturnsThatCart() throws Exception {
+        Cart cartInicial = mock(Cart.class);
+        when(cartInicial.getState()).thenReturn(CartState.ACTIVE);
+        when(cartInicial.getCartDetails()).thenReturn(List.of(mock(CartDetail.class)));
+
+        when(repository.existsById(sharedCartId)).thenReturn(true);
+        when(repository.findById(sharedCartId)).thenReturn(cartInicial);
+
+        CartDTO dto = new CartDTO(CartState.PENDING, null, null);
+
+
+        Cart carritoPendiente = mock(Cart.class);
+        when(carritoPendiente.getState()).thenReturn(CartState.PENDING);
+
+        when(cartCalculator.calculateAndUpdateCart(eq(cartInicial)))
+                .thenReturn(carritoPendiente);
+
+        Cart resultado = cartService.updateState(sharedCartId, dto);
+
+        assertEquals(carritoPendiente, resultado);
+        assertEquals(CartState.PENDING, resultado.getState());
+
+        verify(cartCalculator, times(1)).calculateAndUpdateCart(eq(cartInicial));
+        verify(repository, times(1)).save(any());
+    }
+
+    @Test
+    void updateState_FromPendingToClosed_InvokesHandleClosedAndReturnsThatCart() throws Exception {
+        Cart cartInicial = mock(Cart.class);
+        when(cartInicial.getState()).thenReturn(CartState.PENDING);
+        when(cartInicial.getCartDetails()).thenReturn(List.of(mock(CartDetail.class)));
+
+        when(repository.existsById(sharedCartId)).thenReturn(true);
+        when(repository.findById(sharedCartId)).thenReturn(cartInicial);
+
+        var countryTaxMock = mock(com.gft.wrk2025carrito.shopping_cart.domain.model.countryTax.CountryTax.class);
+        var paymentMethodMock = mock(com.gft.wrk2025carrito.shopping_cart.domain.model.paymentMethod.PaymentMethod.class);
+
+        CartDTO dto = new CartDTO(CartState.CLOSED, countryTaxMock, paymentMethodMock);
+
+        Cart carritoCerrado = mock(Cart.class);
+        when(carritoCerrado.getState()).thenReturn(CartState.CLOSED);
+
+        when(carritoCerrado.getCountryTax()).thenReturn(countryTaxMock);
+        when(carritoCerrado.getPaymentMethod()).thenReturn(paymentMethodMock);
+
+        when(cartCalculator.calculateAndUpdateCart(eq(cartInicial)))
+                .thenReturn(carritoCerrado);
+
+        Cart resultado = cartService.updateState(sharedCartId, dto);
+
+        assertEquals(carritoCerrado, resultado);
+        assertEquals(CartState.CLOSED, resultado.getState());
+
+        assertEquals(countryTaxMock, resultado.getCountryTax());
+        assertEquals(paymentMethodMock, resultado.getPaymentMethod());
+
+        verify(cartCalculator, times(1)).calculateAndUpdateCart(eq(cartInicial));
+        verify(repository, times(1)).save(any());
+    }
+
+    @Test
+    void updateState_FromPendingToPending_ThrowsCannotUpdateToPending() {
+        Cart cartInicial = mock(Cart.class);
+        when(cartInicial.getState()).thenReturn(CartState.PENDING);
+
+        when(repository.existsById(sharedCartId)).thenReturn(true);
+        when(repository.findById(sharedCartId)).thenReturn(cartInicial);
+
+        CartDTO dto = new CartDTO(CartState.PENDING, null, null);
+
+        IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> cartService.updateState(sharedCartId, dto)
+        );
+
+        assertEquals(
+                "Cannot update cart state from PENDING to PENDING",
+                ex.getMessage()
+        );
+    }
+
+    @Test
+    void updateState_ActiveToPending_NoCartDetails_ThrowsMustHaveAtLeastOneProduct() {
+        UUID cartId = UUID.randomUUID();
+        Cart cartInicial = mock(Cart.class);
+        when(cartInicial.getState()).thenReturn(CartState.ACTIVE);
+        when(cartInicial.getCartDetails()).thenReturn(Collections.emptyList());
+
+        when(repository.existsById(cartId)).thenReturn(true);
+        when(repository.findById(cartId)).thenReturn(cartInicial);
+
+        CartDTO dto = new CartDTO(CartState.PENDING, null, null);
+
+        IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> cartService.updateState(cartId, dto)
+        );
+
+        assertEquals(
+                "There must be at least one product to change state to PENDING",
+                ex.getMessage()
+        );
+    }
+
+    @Test
+    void updateState_ActiveToClosed_ThrowsCannotUpdateToClosed() {
+        UUID cartId = UUID.randomUUID();
+        Cart cartInicial = mock(Cart.class);
+        when(cartInicial.getState()).thenReturn(CartState.ACTIVE);
+        when(cartInicial.getCartDetails()).thenReturn(List.of(mock(CartDetail.class)));
+
+        when(repository.existsById(cartId)).thenReturn(true);
+        when(repository.findById(cartId)).thenReturn(cartInicial);
+
+        CartDTO dto = new CartDTO(CartState.CLOSED, null, null);
+
+        IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> cartService.updateState(cartId, dto)
+        );
+
+        assertEquals(
+                "Cannot update cart state from ACTIVE to CLOSED",
+                ex.getMessage()
+        );
+    }
+
+    @Test
+    void updateState_PendingToClosed_NoCartDetails_ThrowsMustHaveAtLeastOneProductForClosed() {
+        UUID cartId = UUID.randomUUID();
+        Cart cartInicial = mock(Cart.class);
+        when(cartInicial.getState()).thenReturn(CartState.PENDING);
+        when(cartInicial.getCartDetails()).thenReturn(Collections.emptyList());
+
+        when(repository.existsById(cartId)).thenReturn(true);
+        when(repository.findById(cartId)).thenReturn(cartInicial);
+
+        CartDTO dto = new CartDTO(CartState.CLOSED, null, null);
+
+        IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> cartService.updateState(cartId, dto)
+        );
+
+        assertEquals(
+                "There must be at least one product in the cart to change state to CLOSED",
+                ex.getMessage()
+        );
+    }
+
+    @Test
+    void updateState_PendingToClosed_NullTaxOrPayment_ThrowsCountryTaxAndPaymentCannotBeNull() {
+        UUID cartId = UUID.randomUUID();
+        Cart cartInicial = mock(Cart.class);
+        when(cartInicial.getState()).thenReturn(CartState.PENDING);
+        when(cartInicial.getCartDetails()).thenReturn(List.of(mock(CartDetail.class)));
+
+        when(repository.existsById(cartId)).thenReturn(true);
+        when(repository.findById(cartId)).thenReturn(cartInicial);
+
+        CartDTO dto = new CartDTO(CartState.CLOSED, null, null);
+
+        IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> cartService.updateState(cartId, dto)
+        );
+
+        assertEquals(
+                "Country tax and payment method cannot be null when updating to CLOSED",
+                ex.getMessage()
+        );
+    }
+
+    @Test
+    void updateState_PendingToClosed_StateNotPending_ThrowsCannotUpdateToClosed() {
+
+        UUID cartId = UUID.randomUUID();
+        Cart cartInicial = mock(Cart.class);
+        when(cartInicial.getState()).thenReturn(CartState.ACTIVE);
+        when(cartInicial.getCartDetails()).thenReturn(List.of(mock(CartDetail.class)));
+
+        when(repository.existsById(cartId)).thenReturn(true);
+        when(repository.findById(cartId)).thenReturn(cartInicial);
+
+        CartDTO dto = new CartDTO(CartState.CLOSED, mock(com.gft.wrk2025carrito.shopping_cart.domain.model.countryTax.CountryTax.class),
+                mock(com.gft.wrk2025carrito.shopping_cart.domain.model.paymentMethod.PaymentMethod.class));
+
+        IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> cartService.updateState(cartId, dto)
+        );
+
+        assertEquals(
+                "Cannot update cart state from ACTIVE to CLOSED",
+                ex.getMessage()
+        );
+    }
+
+    @Test
+    void updateState_FromActiveToPending_CalculatorThrows_PropagatesErrorPending() throws Exception {
+        UUID cartId = UUID.randomUUID();
+        Cart cartInicial = mock(Cart.class);
+        when(cartInicial.getState()).thenReturn(CartState.ACTIVE);
+        when(cartInicial.getCartDetails()).thenReturn(List.of(mock(CartDetail.class)));
+
+        when(repository.existsById(cartId)).thenReturn(true);
+        when(repository.findById(cartId)).thenReturn(cartInicial);
+
+        when(cartCalculator.calculateAndUpdateCart(eq(cartInicial)))
+                .thenThrow(new RuntimeException("algo falló internamente"));
+
+        CartDTO dto = new CartDTO(CartState.PENDING, null, null);
+
+        IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> cartService.updateState(cartId, dto)
+        );
+
+        assertTrue(
+                ex.getMessage().contains("Error calculating pending totals: algo falló internamente"),
+                "Debería lanzar IllegalArgumentException con prefijo 'Error calculating pending totals:'"
+        );
+
+        verify(cartCalculator, times(1)).calculateAndUpdateCart(eq(cartInicial));
+        verify(repository, never()).save(any());
+    }
+
+    @Test
+    void updateState_ActiveToPending_NullCartDetails_ThrowsMustHaveAtLeastOneProduct() {
+        UUID cartId = UUID.randomUUID();
+        Cart cartInicial = mock(Cart.class);
+        when(cartInicial.getState()).thenReturn(CartState.ACTIVE);
+        when(cartInicial.getCartDetails()).thenReturn(null);
+
+        when(repository.existsById(cartId)).thenReturn(true);
+        when(repository.findById(cartId)).thenReturn(cartInicial);
+
+        CartDTO dto = new CartDTO(CartState.PENDING, null, null);
+
+        IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> cartService.updateState(cartId, dto)
+        );
+
+        assertEquals(
+                "There must be at least one product to change state to PENDING",
+                ex.getMessage()
+        );
+    }
+
+    @Test
+    void updateState_FromPendingToClosed_CalculatorThrows_PropagatesErrorClosed() throws Exception {
+        UUID cartId = UUID.randomUUID();
+        Cart cartInicial = mock(Cart.class);
+        when(cartInicial.getState()).thenReturn(CartState.PENDING);
+        when(cartInicial.getCartDetails()).thenReturn(List.of(mock(CartDetail.class)));
+
+        when(repository.existsById(cartId)).thenReturn(true);
+        when(repository.findById(cartId)).thenReturn(cartInicial);
+
+        var countryTaxMock = mock(com.gft.wrk2025carrito.shopping_cart.domain.model.countryTax.CountryTax.class);
+        var paymentMethodMock = mock(com.gft.wrk2025carrito.shopping_cart.domain.model.paymentMethod.PaymentMethod.class);
+
+        when(cartCalculator.calculateAndUpdateCart(eq(cartInicial)))
+                .thenThrow(new RuntimeException("error interno cerrado"));
+
+        CartDTO dto = new CartDTO(CartState.CLOSED, countryTaxMock, paymentMethodMock);
+
+        IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> cartService.updateState(cartId, dto)
+        );
+
+        assertTrue(
+                ex.getMessage().contains("Error calculating closed totals: error interno cerrado"),
+                "Debería lanzar IllegalArgumentException con prefijo 'Error calculating closed totals:'"
+        );
+
+        verify(cartCalculator, times(1)).calculateAndUpdateCart(eq(cartInicial));
+        verify(repository, never()).save(any());
+    }
+
+    @Test
+    void updateState_PendingToClosed_NullCartDetails_ThrowsMustHaveAtLeastOneProductForClosed() {
+        UUID cartId = UUID.randomUUID();
+        Cart cartInicial = mock(Cart.class);
+        when(cartInicial.getState()).thenReturn(CartState.PENDING);
+        when(cartInicial.getCartDetails()).thenReturn(null);
+
+        when(repository.existsById(cartId)).thenReturn(true);
+        when(repository.findById(cartId)).thenReturn(cartInicial);
+
+        var countryTaxMock = mock(com.gft.wrk2025carrito.shopping_cart.domain.model.countryTax.CountryTax.class);
+        var paymentMethodMock = mock(com.gft.wrk2025carrito.shopping_cart.domain.model.paymentMethod.PaymentMethod.class);
+        CartDTO dto = new CartDTO(CartState.CLOSED, countryTaxMock, paymentMethodMock);
+
+        IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> cartService.updateState(cartId, dto)
+        );
+
+        assertEquals(
+                "There must be at least one product in the cart to change state to CLOSED",
+                ex.getMessage()
+        );
+    }
+
+    @Test
+    void updateState_PendingToClosed_PaymentMethodNull_ThrowsCountryTaxAndPaymentCannotBeNull() throws Exception {
+        UUID cartId = UUID.randomUUID();
+
+        Cart cartInicial = mock(Cart.class);
+        when(cartInicial.getState()).thenReturn(CartState.PENDING);
+        when(cartInicial.getCartDetails()).thenReturn(List.of(mock(CartDetail.class)));
+
+        when(repository.existsById(cartId)).thenReturn(true);
+        when(repository.findById(cartId)).thenReturn(cartInicial);
+
+        var countryTaxMock = mock(com.gft.wrk2025carrito.shopping_cart.domain.model.countryTax.CountryTax.class);
+        CartDTO dtoConTaxPeroSinPago = new CartDTO(CartState.CLOSED, countryTaxMock, null);
+
+        IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> cartService.updateState(cartId, dtoConTaxPeroSinPago)
+        );
+
+        assertEquals(
+                "Country tax and payment method cannot be null when updating to CLOSED",
+                ex.getMessage()
+        );
+
+        verify(cartCalculator, never()).calculateAndUpdateCart(any());
+        verify(repository, never()).save(any());
+    }
+
+
+    @Test
+    void updateState_PendingToClosed_CountryTaxNull_ThrowsCountryTaxAndPaymentCannotBeNull() throws Exception {
+        UUID cartId = UUID.randomUUID();
+
+        Cart cartInicial = mock(Cart.class);
+        when(cartInicial.getState()).thenReturn(CartState.PENDING);
+        when(cartInicial.getCartDetails()).thenReturn(List.of(mock(CartDetail.class)));
+
+        when(repository.existsById(cartId)).thenReturn(true);
+        when(repository.findById(cartId)).thenReturn(cartInicial);
+
+        var paymentMethodMock = mock(com.gft.wrk2025carrito.shopping_cart.domain.model.paymentMethod.PaymentMethod.class);
+        CartDTO dtoSinTaxPeroConPago = new CartDTO(CartState.CLOSED, null, paymentMethodMock);
+
+        IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> cartService.updateState(cartId, dtoSinTaxPeroConPago)
+        );
+
+        assertEquals(
+                "Country tax and payment method cannot be null when updating to CLOSED",
+                ex.getMessage()
+        );
+
+        verify(cartCalculator, never()).calculateAndUpdateCart(any());
+        verify(repository, never()).save(any());
     }
 
     @Test

@@ -1,10 +1,14 @@
 package com.gft.wrk2025carrito.shopping_cart.application.service;
 
+import com.gft.wrk2025carrito.shopping_cart.application.dto.CartDTO;
 import com.gft.wrk2025carrito.shopping_cart.application.helper.CartCalculator;
+import com.gft.wrk2025carrito.shopping_cart.application.service.client.OrderMicroserviceService;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.Cart;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cartDetail.CartDetail;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.CartId;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.CartState;
+import com.gft.wrk2025carrito.shopping_cart.domain.model.countryTax.CountryTax;
+import com.gft.wrk2025carrito.shopping_cart.domain.model.paymentMethod.PaymentMethod;
 import com.gft.wrk2025carrito.shopping_cart.domain.repository.CartRepository;
 import com.gft.wrk2025carrito.shopping_cart.domain.services.CartServices;
 import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.factory.CartFactory;
@@ -26,6 +30,8 @@ public class CartServicesImpl implements CartServices {
     private final CartFactory cartFactory;
     private final RestTemplate restTemplate;
     private final CartCalculator cartCalculator;
+    private final OrderMicroserviceService orderMicroserviceService;
+
 
     @Override
     @Transactional
@@ -64,12 +70,39 @@ public class CartServicesImpl implements CartServices {
 
     @Override
     @Transactional
-    public void delete(UUID id) {
-        if (id == null) throw new IllegalArgumentException("Cart ID must not be null");
+    public Cart updateState(UUID cartId, CartDTO cartDTO) {
 
-        if (!cartRepository.existsById(id)) throw new IllegalStateException("No cart found with ID " + id);
+        if (cartId == null) {
+            throw new IllegalArgumentException("Cart id cannot be null");
+        }
+        if (!cartRepository.existsById(cartId)) {
+            throw new IllegalArgumentException("Cart with id " + cartId + " does not exist");
+        }
+        if (cartDTO == null) {
+            throw new IllegalArgumentException("New cart cannot be null");
+        }
 
-        cartRepository.deleteById(id);
+        Cart cart = cartRepository.findById(cartId);
+        CartState currentState = cart.getState();
+        CartState targetState = cartDTO.cartState();
+
+        // Solo se permiten transiciones desde ACTIVE o desde PENDING
+        if (currentState != CartState.ACTIVE &&
+                currentState != CartState.PENDING) {
+            throw new IllegalArgumentException(
+                    "Cart with id " + cartId + " cannot be updated from state " + currentState
+            );
+        }
+
+        if (targetState == CartState.PENDING) {
+            return handlePending(cart);
+        }
+
+        if (targetState == CartState.CLOSED) {
+            return handleClosed(cart, cartDTO);
+        }
+
+        throw new IllegalArgumentException("Cannot update cart state to " + targetState);
     }
 
     @Override
@@ -121,7 +154,19 @@ public class CartServicesImpl implements CartServices {
                 .toList();
 
         cart.setCartDetails(newCartDetails);
+        cart.setUpdatedAt(new Date());
+
         cartRepository.save(cartFactory.toEntity(cart));
+    }
+
+    @Override
+    @Transactional
+    public void delete(UUID id) {
+        if (id == null) throw new IllegalArgumentException("Cart ID must not be null");
+
+        if (!cartRepository.existsById(id)) throw new IllegalStateException("No cart found with ID " + id);
+
+        cartRepository.deleteById(id);
     }
 
     @Override
@@ -153,6 +198,77 @@ public class CartServicesImpl implements CartServices {
         Cart cart = Cart.build(new CartId(), userId, null, null, null, null, new Date(), null, java.util.Collections.emptyList(), CartState.ACTIVE, java.util.Collections.emptyList());
 
         return cartRepository.create(cart);
+    }
+
+
+    private Cart handlePending(Cart cart) {
+
+        if (cart.getState() != CartState.ACTIVE) {
+            throw new IllegalArgumentException(
+                    "Cannot update cart state from " + cart.getState() + " to PENDING"
+            );
+        }
+
+        if (cart.getCartDetails() == null || cart.getCartDetails().isEmpty()) {
+            throw new IllegalArgumentException(
+                    "There must be at least one product to change state to PENDING"
+            );
+        }
+
+        Cart updatedCart;
+        try {
+            updatedCart = cartCalculator.calculateAndUpdateCart(cart);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Error calculating pending totals: " + e.getMessage(), e);
+        }
+
+        updatedCart.setState(CartState.PENDING);
+
+        updatedCart.setPromotionIds(orderMicroserviceService.getAllOrderPromotions(updatedCart));
+        updatedCart.setUpdatedAt(new Date());
+
+        cartRepository.save(cartFactory.toEntity(updatedCart));
+
+        return updatedCart;
+    }
+
+    private Cart handleClosed(Cart cart, CartDTO cartDTO) {
+
+        if (cart.getCartDetails() == null || cart.getCartDetails().isEmpty()) {
+            throw new IllegalArgumentException(
+                    "There must be at least one product in the cart to change state to CLOSED"
+            );
+        }
+
+        if (cart.getState() != CartState.PENDING) {
+            throw new IllegalArgumentException(
+                    "Cannot update cart state from " + cart.getState() + " to CLOSED"
+            );
+        }
+
+        CountryTax newCountryTax = cartDTO.countryTax();
+        PaymentMethod newPaymentMethod = cartDTO.paymentMethod();
+        if (newCountryTax == null || newPaymentMethod == null) {
+            throw new IllegalArgumentException(
+                    "Country tax and payment method cannot be null when updating to CLOSED"
+            );
+        }
+
+        cart.setCountryTax(newCountryTax);
+        cart.setPaymentMethod(newPaymentMethod);
+
+        Cart updatedCart;
+        try {
+            updatedCart = cartCalculator.calculateAndUpdateCart(cart);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Error calculating closed totals: " + e.getMessage(), e);
+        }
+
+        updatedCart.setState(CartState.CLOSED);
+
+        updatedCart.setUpdatedAt(new Date());
+        cartRepository.save(cartFactory.toEntity(updatedCart));
+        return updatedCart;
     }
 
 }

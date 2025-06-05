@@ -1,5 +1,8 @@
 package com.gft.wrk2025carrito.shopping_cart.infrastructure.web;
 
+import com.gft.wrk2025carrito.shopping_cart.application.dto.CartDTO;
+import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.Cart;
+import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.CartState;
 import com.gft.wrk2025carrito.shopping_cart.domain.services.CartServices;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -10,6 +13,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Map;
 import java.util.UUID;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -68,6 +72,20 @@ class CartControllerTest {
         UUID id = UUID.randomUUID();
         controller.getCartWithTotalPrice(id);
         verify(cartServices).showTotalPriceAndWeight(id);
+    }
+
+    @Test
+    void should_UpdateCartState_Successfully() {
+        UUID cartId = UUID.randomUUID();
+        CartDTO dto = new CartDTO(CartState.PENDING, null, null);
+
+        Cart dummyCart = mock(Cart.class);
+        when(cartServices.updateState(cartId, dto)).thenReturn(dummyCart);
+
+        Cart result = controller.updateState(cartId, dto);
+
+        verify(cartServices, times(1)).updateState(cartId, dto);
+        assertEquals(dummyCart, result);
     }
 
 }
