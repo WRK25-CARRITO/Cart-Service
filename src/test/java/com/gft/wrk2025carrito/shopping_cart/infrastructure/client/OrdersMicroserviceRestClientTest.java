@@ -8,10 +8,14 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 class OrdersMicroserviceRestClientTest {
@@ -23,7 +27,6 @@ class OrdersMicroserviceRestClientTest {
     void setUp() {
         restTemplate = mock(RestTemplate.class);
         client = new OrdersMicroserviceRestClient(restTemplate);
-
         client.url = "http://localhost:8080/offers";
     }
 
@@ -45,9 +48,13 @@ class OrdersMicroserviceRestClientTest {
                 new ResponseEntity<>(fakePromos, HttpStatus.OK);
 
         when(restTemplate.exchange(
-                eq("http://localhost:8080/offers"),
-                eq(HttpMethod.POST),
-                any(HttpEntity.class),
+                argThat((String uri) ->
+                        uri.startsWith("http://localhost:8080/offers?") &&
+                                uri.contains("100=2") &&
+                                uri.contains("200=5")
+                ),
+                eq(HttpMethod.GET),
+                isNull(),
                 any(ParameterizedTypeReference.class)
         )).thenReturn(response);
 
@@ -62,14 +69,19 @@ class OrdersMicroserviceRestClientTest {
         CartDetail d = new CartDetail();
         d.setProductId(42L);
         d.setQuantity(1);
+
         Cart cart = new Cart();
         cart.setCartDetails(List.of(d));
 
         ResponseEntity<List<Long>> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+
         when(restTemplate.exchange(
-                anyString(),
-                eq(HttpMethod.POST),
-                any(HttpEntity.class),
+                argThat((String uri) ->
+                        uri.startsWith("http://localhost:8080/offers?") &&
+                                uri.contains("42=1")
+                ),
+                eq(HttpMethod.GET),
+                isNull(),
                 any(ParameterizedTypeReference.class)
         )).thenReturn(response);
 
@@ -77,7 +89,8 @@ class OrdersMicroserviceRestClientTest {
                 IllegalStateException.class,
                 () -> client.getAllOrderPromotions(cart)
         );
-        assertEquals("Error fetching applicable promotions", ex.getMessage());
+        assertTrue(ex.getMessage().startsWith("Error fetching applicable promotions"));
+        assertTrue(ex.getMessage().contains("404"));
     }
 
     @Test
@@ -85,14 +98,19 @@ class OrdersMicroserviceRestClientTest {
         CartDetail d = new CartDetail();
         d.setProductId(7L);
         d.setQuantity(3);
+
         Cart cart = new Cart();
         cart.setCartDetails(List.of(d));
 
         ResponseEntity<List<Long>> response = new ResponseEntity<>(null, HttpStatus.OK);
+
         when(restTemplate.exchange(
-                anyString(),
-                eq(HttpMethod.POST),
-                any(HttpEntity.class),
+                argThat((String uri) ->
+                        uri.startsWith("http://localhost:8080/offers?") &&
+                                uri.contains("7=3")
+                ),
+                eq(HttpMethod.GET),
+                isNull(),
                 any(ParameterizedTypeReference.class)
         )).thenReturn(response);
 
@@ -102,4 +120,17 @@ class OrdersMicroserviceRestClientTest {
         );
         assertEquals("No promotions can be applied", ex.getMessage());
     }
+
+    @Test
+    void getAllOrderPromotions_emptyCart_ThrowsIllegalArgumentException() {
+        Cart cart = new Cart();
+        cart.setCartDetails(Collections.emptyList());
+
+        IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> client.getAllOrderPromotions(cart)
+        );
+        assertEquals("Cart with id " + cart.getId() + " is empty", ex.getMessage());
+    }
+
 }

@@ -1,6 +1,7 @@
 package com.gft.wrk2025carrito.shopping_cart.application.service;
 
 import com.gft.wrk2025carrito.shopping_cart.application.dto.CartDTO;
+import com.gft.wrk2025carrito.shopping_cart.application.dto.OrderDTO;
 import com.gft.wrk2025carrito.shopping_cart.application.helper.CartCalculator;
 import com.gft.wrk2025carrito.shopping_cart.application.service.client.OrderMicroserviceService;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.Cart;
@@ -11,6 +12,7 @@ import com.gft.wrk2025carrito.shopping_cart.domain.model.countryTax.CountryTax;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.paymentMethod.PaymentMethod;
 import com.gft.wrk2025carrito.shopping_cart.domain.repository.CartRepository;
 import com.gft.wrk2025carrito.shopping_cart.domain.services.CartServices;
+import com.gft.wrk2025carrito.shopping_cart.infrastructure.messages.CartProducer;
 import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.factory.CartFactory;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +33,7 @@ public class CartServicesImpl implements CartServices {
     private final RestTemplate restTemplate;
     private final CartCalculator cartCalculator;
     private final OrderMicroserviceService orderMicroserviceService;
-
+    private final CartProducer cartProducer;
 
     @Override
     @Transactional
@@ -86,7 +88,6 @@ public class CartServicesImpl implements CartServices {
         CartState currentState = cart.getState();
         CartState targetState = cartDTO.cartState();
 
-        // Solo se permiten transiciones desde ACTIVE o desde PENDING
         if (currentState != CartState.ACTIVE &&
                 currentState != CartState.PENDING) {
             throw new IllegalArgumentException(
@@ -123,7 +124,6 @@ public class CartServicesImpl implements CartServices {
             throw new IllegalArgumentException("Cart with id " + cartId + " cannot be updated");
         }
 
-        // Eliminar duplicados y sumar cantidades
         Map<Long, Integer> productQuantities = cartProducts.entrySet().stream()
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
@@ -229,6 +229,8 @@ public class CartServicesImpl implements CartServices {
 
         cartRepository.save(cartFactory.toEntity(updatedCart));
 
+        cartProducer.sendCartStateChanged(new OrderDTO(updatedCart.getUserId(),updatedCart.getId().id(),updatedCart.getState().toString()));
+
         return updatedCart;
     }
 
@@ -265,9 +267,12 @@ public class CartServicesImpl implements CartServices {
         }
 
         updatedCart.setState(CartState.CLOSED);
-
         updatedCart.setUpdatedAt(new Date());
+
         cartRepository.save(cartFactory.toEntity(updatedCart));
+
+        cartProducer.sendCartStateChanged(new OrderDTO(updatedCart.getUserId(),updatedCart.getId().id(),updatedCart.getState().toString()));
+
         return updatedCart;
     }
 
