@@ -3,7 +3,6 @@ package com.gft.wrk2025carrito.shopping_cart.application.service;
 import com.gft.wrk2025carrito.shopping_cart.application.dto.CartDTO;
 import com.gft.wrk2025carrito.shopping_cart.application.helper.CartCalculator;
 import com.gft.wrk2025carrito.shopping_cart.application.service.client.OrderMicroserviceService;
-import com.gft.wrk2025carrito.shopping_cart.application.helper.CartCalculator;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.Cart;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cartDetail.CartDetail;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.CartId;
@@ -30,7 +29,6 @@ public class CartServicesImpl implements CartServices {
     private final CartRepository cartRepository;
     private final CartFactory cartFactory;
     private final RestTemplate restTemplate;
-    private final CartCalculator cartCalculator;
     private final CartCalculator cartCalculator;
     private final OrderMicroserviceService orderMicroserviceService;
 
