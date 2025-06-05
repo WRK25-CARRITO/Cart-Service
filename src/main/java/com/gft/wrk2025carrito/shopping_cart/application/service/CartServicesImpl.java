@@ -55,6 +55,12 @@ public class CartServicesImpl implements CartServices {
     }
 
     @Override
+    @Transactional
+    public List<Cart> getAllActiveCarts(){
+        return cartRepository.findAllActive();
+    }
+
+    @Override
     public Cart showTotalPriceAndWeight(UUID id) throws Exception {
         if(id == null) {
             throw new IllegalArgumentException("Id cannot be null");

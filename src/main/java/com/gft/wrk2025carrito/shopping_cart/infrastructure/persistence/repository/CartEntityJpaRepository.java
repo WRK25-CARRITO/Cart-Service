@@ -18,6 +18,8 @@ public interface CartEntityJpaRepository extends JpaRepository<CartEntity, UUID>
 
     List<CartEntity> findByUserId(UUID userId);
 
+    List<CartEntity> findByState(CartState state);
+
     boolean existsByUserIdAndState(UUID userId, CartState state);
 
 }
