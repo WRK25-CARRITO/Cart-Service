@@ -1,6 +1,8 @@
 package com.gft.wrk2025carrito.shopping_cart.application.service;
 
 import com.gft.wrk2025carrito.shopping_cart.application.dto.CartDTO;
+import com.gft.wrk2025carrito.shopping_cart.application.dto.OrderDTO;
+import com.gft.wrk2025carrito.shopping_cart.application.dto.OrderLineDTO;
 import com.gft.wrk2025carrito.shopping_cart.application.helper.CartCalculator;
 import com.gft.wrk2025carrito.shopping_cart.application.service.client.OrderMicroserviceService;
 import com.gft.wrk2025carrito.shopping_cart.application.helper.CartCalculator;
@@ -15,6 +17,8 @@ import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.repositor
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -57,24 +61,27 @@ class CartServicesImplTest {
 
     private UUID sharedCartId;
     private Cart baseCart;
-    private CartDTO dtoPending;
-    private CartDTO dtoClosed;
+//    private CartDTO dtoPending;
+//    private CartDTO dtoClosed;
+    private Cart calculatedCart;
     private Cart mockPendingCart;
     private Cart mockClosedCart;
     private CountryTax countryTaxMock;
     private PaymentMethod paymentMethodMock;
 
+
     @BeforeEach
     void setUp() {
         sharedCartId = UUID.randomUUID();
 
+        calculatedCart = mock(Cart.class);
         baseCart = mock(Cart.class);
 
-        dtoPending = new CartDTO(CartState.PENDING, null, null);
+//        dtoPending = new CartDTO(CartState.PENDING, null, null);
 
         countryTaxMock      = mock(CountryTax.class);
         paymentMethodMock   = mock(PaymentMethod.class);
-        dtoClosed = new CartDTO(CartState.CLOSED, countryTaxMock, paymentMethodMock);
+//        dtoClosed = new CartDTO(CartState.CLOSED, countryTaxMock, paymentMethodMock);
 
         mockPendingCart = mock(Cart.class);
         lenient().when(mockPendingCart.getState()).thenReturn(CartState.PENDING);
@@ -805,4 +812,87 @@ class CartServicesImplTest {
         verify(repository,       times(1)).findById(id);
         verify(cartCalculator,   times(1)).calculateAndUpdateCart(mockCart);
     }
+
+    @Test
+    void flujoExitoso_devuelveUUIDYCreaNuevoCart() throws Exception {
+
+        CartId cartId = new CartId();
+        UUID id = cartId.id();
+        UUID userId = UUID.randomUUID();
+        UUID ordenEnviadaUuid = UUID.randomUUID();
+
+        Cart carritoInicial = new Cart();
+        carritoInicial.setId(cartId);
+        carritoInicial.setState(CartState.CLOSED);
+        carritoInicial.setUserId(userId);
+
+        Cart carritoCalculado = new Cart();
+        carritoCalculado.setId(cartId);
+        carritoCalculado.setState(CartState.CLOSED);
+        carritoCalculado.setUserId(userId);
+
+        OrderDTO dtoParaEnviar = new OrderDTO();
+        dtoParaEnviar.setOrderId(UUID.randomUUID());
+
+        when(repository.existsById(id)).thenReturn(true);
+        when(repository.findById(id)).thenReturn(carritoInicial);
+        when(cartCalculator.calculateAndUpdateCart(carritoInicial)).thenReturn(carritoCalculado);
+
+        when(orderMicroserviceService.sendAOrder(dtoParaEnviar)).thenReturn(ordenEnviadaUuid);
+
+        UUID resultado = cartService.sendCartToOrder(id); //java.lang.NullPointerException: Cannot invoke "com.gft.wrk2025carrito.shopping_cart.domain.model.countryTax.CountryTax.getTax()" because the return value of "com.gft.wrk2025carrito.shopping_cart.domain.model.cart.Cart.getCountryTax()" is null
+
+        assertEquals(ordenEnviadaUuid, resultado);
+
+        verify(repository).existsById(id);
+        verify(repository).findById(id);
+        verify(cartCalculator).calculateAndUpdateCart(carritoInicial);
+        verify(orderMicroserviceService).sendAOrder(dtoParaEnviar);
+        verify(cartService).createCart(userId);
+
+    }
+
+    @Test
+    void sendCartToOrder_nullId_throwsIllegalArgumentException() {
+        IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> cartService.sendCartToOrder(null)
+        );
+        assertEquals("Cart ID must not be null", ex.getMessage());
+        verifyNoInteractions(repository, cartCalculator, orderMicroserviceService);
+    }
+
+    @Test
+    void sendCartToOrder_cartNotFound_throwsIllegalArgumentException() {
+        UUID notFoundId = UUID.randomUUID();
+        when(repository.existsById(notFoundId)).thenReturn(false);
+
+        IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> cartService.sendCartToOrder(notFoundId)
+        );
+        assertEquals("No cart found with ID " + notFoundId, ex.getMessage());
+        verify(repository).existsById(notFoundId);
+        verify(repository, never()).findById(any());
+        verifyNoInteractions(cartCalculator, orderMicroserviceService);
+    }
+
+    @Test
+    void sendCartToOrder_stateNotClosed_throwsIllegalArgumentException() {
+        // baseCart.getState() devuelve ACTIVE
+        when(baseCart.getState()).thenReturn(CartState.ACTIVE);
+
+        IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> cartService.sendCartToOrder(sharedCartId)
+        );
+        assertEquals(
+                "Cannot send cart state from ACTIVE to Orders",
+                ex.getMessage()
+        );
+        verify(repository).existsById(sharedCartId);
+        verify(repository).findById(sharedCartId);
+        verifyNoInteractions(cartCalculator, orderMicroserviceService);
+    }
+
 }

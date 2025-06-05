@@ -1,5 +1,6 @@
 package com.gft.wrk2025carrito.shopping_cart.infrastructure.client;
 
+import com.gft.wrk2025carrito.shopping_cart.application.dto.OrderDTO;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.Cart;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cartDetail.CartDetail;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,7 +25,8 @@ class OrdersMicroserviceRestClientTest {
         restTemplate = mock(RestTemplate.class);
         client = new OrdersMicroserviceRestClient(restTemplate);
 
-        client.url = "http://localhost:8080/offers";
+        client.urlOffers = "http://localhost:8080/offers";
+        client.urlOrders  = "http://localhost:8080/orders";
     }
 
     @Test
@@ -46,7 +48,7 @@ class OrdersMicroserviceRestClientTest {
 
         when(restTemplate.exchange(
                 eq("http://localhost:8080/offers"),
-                eq(HttpMethod.POST),
+                eq(HttpMethod.GET),
                 any(HttpEntity.class),
                 any(ParameterizedTypeReference.class)
         )).thenReturn(response);
@@ -68,7 +70,7 @@ class OrdersMicroserviceRestClientTest {
         ResponseEntity<List<Long>> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
         when(restTemplate.exchange(
                 anyString(),
-                eq(HttpMethod.POST),
+                eq(HttpMethod.GET),
                 any(HttpEntity.class),
                 any(ParameterizedTypeReference.class)
         )).thenReturn(response);
@@ -91,7 +93,7 @@ class OrdersMicroserviceRestClientTest {
         ResponseEntity<List<Long>> response = new ResponseEntity<>(null, HttpStatus.OK);
         when(restTemplate.exchange(
                 anyString(),
-                eq(HttpMethod.POST),
+                eq(HttpMethod.GET),
                 any(HttpEntity.class),
                 any(ParameterizedTypeReference.class)
         )).thenReturn(response);
@@ -101,5 +103,66 @@ class OrdersMicroserviceRestClientTest {
                 () -> client.getAllOrderPromotions(cart)
         );
         assertEquals("No promotions can be applied", ex.getMessage());
+    }
+
+    @Test
+    void sentAOrder_success() {
+        UUID expectedUuid = UUID.randomUUID();
+        ResponseEntity<UUID> responseEntity =
+                new ResponseEntity<>(expectedUuid, HttpStatus.CREATED);
+
+        when(restTemplate.exchange(
+                eq("http://localhost:8080/orders"),
+                eq(HttpMethod.POST),
+                any(HttpEntity.class),
+                any(ParameterizedTypeReference.class)
+        )).thenReturn(responseEntity);
+
+        OrderDTO dummyOrder = new OrderDTO();
+        UUID actualUuid = client.sendAOrder(dummyOrder);
+
+        assertEquals(expectedUuid, actualUuid);
+    }
+
+    @Test
+    void sentAOrder_errorOnStatus() {
+        ResponseEntity<UUID> badResponse =
+                new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+
+        when(restTemplate.exchange(
+                eq("http://localhost:8080/orders"),
+                eq(HttpMethod.POST),
+                any(HttpEntity.class),
+                any(ParameterizedTypeReference.class)
+        )).thenReturn(badResponse);
+
+        OrderDTO dummyOrder = new OrderDTO();
+        IllegalStateException ex = assertThrows(
+                IllegalStateException.class,
+                () -> client.sendAOrder(dummyOrder)
+        );
+
+        assertNotNull(ex.getMessage());
+    }
+
+    @Test
+    void sentAOrder_nullBody() {
+        ResponseEntity<UUID> responseNullBody =
+                new ResponseEntity<>(null, HttpStatus.OK);
+
+        when(restTemplate.exchange(
+                eq("http://localhost:8080/orders"),
+                eq(HttpMethod.POST),
+                any(HttpEntity.class),
+                any(ParameterizedTypeReference.class)
+        )).thenReturn(responseNullBody);
+
+        OrderDTO dummyOrder = new OrderDTO();
+        IllegalStateException ex = assertThrows(
+                IllegalStateException.class,
+                () -> client.sendAOrder(dummyOrder)
+        );
+
+        assertNotNull(ex.getMessage());
     }
 }

@@ -1,6 +1,8 @@
 package com.gft.wrk2025carrito.shopping_cart.application.service;
 
 import com.gft.wrk2025carrito.shopping_cart.application.dto.CartDTO;
+import com.gft.wrk2025carrito.shopping_cart.application.dto.OrderDTO;
+import com.gft.wrk2025carrito.shopping_cart.application.dto.OrderLineDTO;
 import com.gft.wrk2025carrito.shopping_cart.application.helper.CartCalculator;
 import com.gft.wrk2025carrito.shopping_cart.application.service.client.OrderMicroserviceService;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.Cart;
@@ -200,6 +202,30 @@ public class CartServicesImpl implements CartServices {
         return cartRepository.create(cart);
     }
 
+    @Override
+    @Transactional
+    public UUID sendCartToOrder(UUID id) throws Exception {
+
+        if (id == null) throw new IllegalArgumentException("Cart ID must not be null");
+
+        if (!cartRepository.existsById(id)) throw new IllegalArgumentException("No cart found with ID " + id);
+
+        Cart cart = cartRepository.findById(id);
+
+        if (cart.getState() != CartState.CLOSED) {
+            throw new IllegalArgumentException("Cannot send cart state from " + cart.getState() + " to Orders");
+        }
+
+        Cart calculatedCart = cartCalculator.calculateAndUpdateCart(cart);
+
+        OrderDTO order = createOrderFromCart(calculatedCart);
+
+        UUID generatedUuid = orderMicroserviceService.sendAOrder(order);
+
+        createCart(cart.getUserId());
+
+        return generatedUuid;
+    }
 
     private Cart handlePending(Cart cart) {
 
@@ -269,6 +295,25 @@ public class CartServicesImpl implements CartServices {
         updatedCart.setUpdatedAt(new Date());
         cartRepository.save(cartFactory.toEntity(updatedCart));
         return updatedCart;
+    }
+
+    private OrderDTO createOrderFromCart(Cart cart){
+        OrderDTO order = OrderDTO.builder()
+                .orderId(cart.getId().id())
+                .userId(cart.getUserId())
+                .orderDate(new  Date())
+                .totalPrice(cart.getTotalPrice())
+                .totalPrice(cart.getTotalPrice())
+                .countryTax(cart.getCountryTax().getTax())
+                .paymentMethod(cart.getPaymentMethod().getCharge())
+                .ordersOffers(cart.getPromotionIds())
+                .orderReturn(false)
+                .build();
+
+        List<OrderLineDTO> orderLines = OrderLineDTO.fromCartDetailList(cart.getCartDetails());
+        order.setOrderLines(orderLines);
+
+        return order;
     }
 
 }
