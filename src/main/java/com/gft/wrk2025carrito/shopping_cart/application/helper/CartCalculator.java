@@ -3,6 +3,7 @@ package com.gft.wrk2025carrito.shopping_cart.application.helper;
 import com.gft.wrk2025carrito.shopping_cart.application.dto.Product;
 import com.gft.wrk2025carrito.shopping_cart.application.dto.Promotion;
 
+import com.gft.wrk2025carrito.shopping_cart.application.service.client.OrderMicroserviceService;
 import com.gft.wrk2025carrito.shopping_cart.application.service.client.ProductMicroserviceService;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.Cart;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cartDetail.CartDetail;
@@ -17,9 +18,11 @@ import java.util.*;
 public class CartCalculator {
 
     private static ProductMicroserviceService productsMicroserviceService;
+    private static OrderMicroserviceService ordersMicroserviceService;
 
-    public CartCalculator(ProductMicroserviceService productsMicroserviceService) {
+    public CartCalculator(ProductMicroserviceService productsMicroserviceService, OrderMicroserviceService ordersMicroserviceService) {
         CartCalculator.productsMicroserviceService = productsMicroserviceService;
+        CartCalculator.ordersMicroserviceService = ordersMicroserviceService;
     }
 
     private static final List<PromotionStrategy> strategies = List.of(
@@ -29,7 +32,7 @@ public class CartCalculator {
 
     public Cart calculateAndUpdateCart(Cart cart) throws Exception {
         Map<Long, Product> productMap = productsMicroserviceService.getProductsFromCart(cart);
-        List<Promotion> promotions = productsMicroserviceService.getAllApplicablePromotions(cart );
+        List<Promotion> promotions = productsMicroserviceService.getAllApplicablePromotions(cart);
         updateCartDetailsFromProducts(cart, productMap);
 
         BigDecimal subtotal = switch (cart.getState()) {
@@ -45,8 +48,9 @@ public class CartCalculator {
                 .mapToDouble(Double::doubleValue)
                 .sum();
 
-        cart.setTotalPrice(subtotal);
         cart.setTotalWeight(totalWeight);
+        cart.setTotalPrice(subtotal.add(calculateShippingCost(cart.getTotalWeight())));
+
         return cart;
     }
 
@@ -62,6 +66,24 @@ public class CartCalculator {
         BigDecimal normalizedCharge = BigDecimal.valueOf(chargeRate);
         BigDecimal calculatedPrice = price.multiply(BigDecimal.ONE.add( normalizedCharge));
         return round(calculatedPrice);
+    }
+
+    private static BigDecimal calculateShippingCost(Double totalWeight) {
+        if (totalWeight == null) {
+            return BigDecimal.ZERO;
+        }
+
+        if (totalWeight <= 5.0) {
+            return BigDecimal.valueOf(5);
+        }
+        if (totalWeight <= 10.0) {
+            return BigDecimal.valueOf(10);
+        }
+        if (totalWeight <= 20.0) {
+            return BigDecimal.valueOf(20);
+        }
+
+        return BigDecimal.valueOf(50);
     }
 
     private static void validatePercentageAndAmount(BigDecimal amount, Double rate, String context) throws Exception {

@@ -2,6 +2,7 @@ package com.gft.wrk2025carrito.shopping_cart.application.service;
 
 import com.gft.wrk2025carrito.shopping_cart.application.dto.CartDTO;
 import com.gft.wrk2025carrito.shopping_cart.application.helper.CartCalculator;
+import com.gft.wrk2025carrito.shopping_cart.application.service.client.OrderMicroserviceService;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.Cart;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cartDetail.CartDetail;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.CartId;
@@ -29,6 +30,7 @@ public class CartServicesImpl implements CartServices {
     private final CartFactory cartFactory;
     private final RestTemplate restTemplate;
     private final CartCalculator cartCalculator;
+    private static OrderMicroserviceService ordersMicroserviceService;
 
     private static final String PRODUCTS_URL = "https://workshop-7uvd.onrender.com/api/v1/products";
     private static final String PROMOTIONS_URL = "";
@@ -139,6 +141,8 @@ public class CartServicesImpl implements CartServices {
                 .toList();
 
         cart.setCartDetails(newCartDetails);
+        cart.setUpdatedAt(new Date());
+
         cartRepository.save(cartFactory.toEntity(cart));
     }
 
@@ -197,14 +201,18 @@ public class CartServicesImpl implements CartServices {
                     "There must be at least one product to change state to PENDING"
             );
         }
-        cart.setState(CartState.PENDING);
 
         Cart updatedCart;
         try {
-            updatedCart = cartCalculator.calculateAndUpdateCart(cart, restTemplate);
+            updatedCart = cartCalculator.calculateAndUpdateCart(cart);
         } catch (Exception e) {
             throw new IllegalArgumentException("Error calculating pending totals: " + e.getMessage(), e);
         }
+
+        updatedCart.setState(CartState.PENDING);
+
+        updatedCart.setPromotionIds(ordersMicroserviceService.getAllOrderPromotions(updatedCart));
+        updatedCart.setUpdatedAt(new Date());
 
         cartRepository.save(cartFactory.toEntity(updatedCart));
 
@@ -235,14 +243,15 @@ public class CartServicesImpl implements CartServices {
 
         cart.setCountryTax(newCountryTax);
         cart.setPaymentMethod(newPaymentMethod);
-        cart.setState(CartState.CLOSED);
 
         Cart updatedCart;
         try {
-            updatedCart = cartCalculator.calculateAndUpdateCart(cart, restTemplate);
+            updatedCart = cartCalculator.calculateAndUpdateCart(cart);
         } catch (Exception e) {
             throw new IllegalArgumentException("Error calculating closed totals: " + e.getMessage(), e);
         }
+
+        updatedCart.setState(CartState.CLOSED);
 
         updatedCart.setUpdatedAt(new Date());
         cartRepository.save(cartFactory.toEntity(updatedCart));

@@ -54,7 +54,7 @@ public class CartController {
         return cartServices.createCart(userId);
     }
 
-    @PutMapping("/order/{id}")
+    @PutMapping("/confirm/{id}")
     @ResponseStatus(HttpStatus.OK)
     public Cart updateState(@PathVariable UUID id, @RequestBody CartDTO cartDTO) {
         return cartServices.updateState(id, cartDTO);

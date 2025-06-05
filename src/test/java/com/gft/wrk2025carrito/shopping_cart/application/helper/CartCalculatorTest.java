@@ -78,7 +78,7 @@ class CartCalculatorTest {
         Cart result = cartCalculator.calculateAndUpdateCart(cart);
 
         assertNotNull(result);
-        assertEquals(new BigDecimal("20.00"), result.getTotalPrice());
+        assertEquals(new BigDecimal("25.00"), result.getTotalPrice());
         assertEquals(3.0, result.getTotalWeight());
     }
 

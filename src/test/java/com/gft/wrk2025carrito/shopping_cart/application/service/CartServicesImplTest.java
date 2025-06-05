@@ -389,7 +389,7 @@ class CartServicesImplTest {
         Cart carritoPendiente = mock(Cart.class);
         when(carritoPendiente.getState()).thenReturn(CartState.PENDING);
 
-        when(cartCalculator.calculateAndUpdateCart(eq(cartInicial), any(RestTemplate.class)))
+        when(cartCalculator.calculateAndUpdateCart(eq(cartInicial)))
                 .thenReturn(carritoPendiente);
 
         Cart resultado = cartService.updateState(sharedCartId, dto);
@@ -397,7 +397,7 @@ class CartServicesImplTest {
         assertEquals(carritoPendiente, resultado);
         assertEquals(CartState.PENDING, resultado.getState());
 
-        verify(cartCalculator, times(1)).calculateAndUpdateCart(eq(cartInicial), any(RestTemplate.class));
+        verify(cartCalculator, times(1)).calculateAndUpdateCart(eq(cartInicial));
         verify(repository, times(1)).save(any());
     }
 
@@ -421,7 +421,7 @@ class CartServicesImplTest {
         when(carritoCerrado.getCountryTax()).thenReturn(countryTaxMock);
         when(carritoCerrado.getPaymentMethod()).thenReturn(paymentMethodMock);
 
-        when(cartCalculator.calculateAndUpdateCart(eq(cartInicial), any(RestTemplate.class)))
+        when(cartCalculator.calculateAndUpdateCart(eq(cartInicial)))
                 .thenReturn(carritoCerrado);
 
         Cart resultado = cartService.updateState(sharedCartId, dto);
@@ -432,7 +432,7 @@ class CartServicesImplTest {
         assertEquals(countryTaxMock, resultado.getCountryTax());
         assertEquals(paymentMethodMock, resultado.getPaymentMethod());
 
-        verify(cartCalculator, times(1)).calculateAndUpdateCart(eq(cartInicial), any(RestTemplate.class));
+        verify(cartCalculator, times(1)).calculateAndUpdateCart(eq(cartInicial));
         verify(repository, times(1)).save(any());
     }
 
@@ -584,7 +584,7 @@ class CartServicesImplTest {
         when(repository.existsById(cartId)).thenReturn(true);
         when(repository.findById(cartId)).thenReturn(cartInicial);
 
-        when(cartCalculator.calculateAndUpdateCart(eq(cartInicial), any(RestTemplate.class)))
+        when(cartCalculator.calculateAndUpdateCart(eq(cartInicial)))
                 .thenThrow(new RuntimeException("algo falló internamente"));
 
         CartDTO dto = new CartDTO(CartState.PENDING, null, null);
@@ -599,7 +599,7 @@ class CartServicesImplTest {
                 "Debería lanzar IllegalArgumentException con prefijo 'Error calculating pending totals:'"
         );
 
-        verify(cartCalculator, times(1)).calculateAndUpdateCart(eq(cartInicial), any(RestTemplate.class));
+        verify(cartCalculator, times(1)).calculateAndUpdateCart(eq(cartInicial));
         verify(repository, never()).save(any());
     }
 
@@ -639,7 +639,7 @@ class CartServicesImplTest {
         var countryTaxMock = mock(com.gft.wrk2025carrito.shopping_cart.domain.model.countryTax.CountryTax.class);
         var paymentMethodMock = mock(com.gft.wrk2025carrito.shopping_cart.domain.model.paymentMethod.PaymentMethod.class);
 
-        when(cartCalculator.calculateAndUpdateCart(eq(cartInicial), any(RestTemplate.class)))
+        when(cartCalculator.calculateAndUpdateCart(eq(cartInicial)))
                 .thenThrow(new RuntimeException("error interno cerrado"));
 
         CartDTO dto = new CartDTO(CartState.CLOSED, countryTaxMock, paymentMethodMock);
@@ -654,7 +654,7 @@ class CartServicesImplTest {
                 "Debería lanzar IllegalArgumentException con prefijo 'Error calculating closed totals:'"
         );
 
-        verify(cartCalculator, times(1)).calculateAndUpdateCart(eq(cartInicial), any(RestTemplate.class));
+        verify(cartCalculator, times(1)).calculateAndUpdateCart(eq(cartInicial));
         verify(repository, never()).save(any());
     }
 
@@ -707,7 +707,7 @@ class CartServicesImplTest {
                 ex.getMessage()
         );
 
-        verify(cartCalculator, never()).calculateAndUpdateCart(any(), any(RestTemplate.class));
+        verify(cartCalculator, never()).calculateAndUpdateCart(any());
         verify(repository, never()).save(any());
     }
 
@@ -736,7 +736,7 @@ class CartServicesImplTest {
                 ex.getMessage()
         );
 
-        verify(cartCalculator, never()).calculateAndUpdateCart(any(), any(RestTemplate.class));
+        verify(cartCalculator, never()).calculateAndUpdateCart(any());
         verify(repository, never()).save(any());
     }
 

@@ -183,7 +183,7 @@ public class CartControllerIT {
 
     @Test
     void should_Return400_whenCartIdInvalid() throws Exception {
-        mockMvc.perform(put("/carts/order/invalid-uuid")
+        mockMvc.perform(put("/carts/confirm/invalid-uuid")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
                 .andExpect(status().isBadRequest());
@@ -195,7 +195,7 @@ public class CartControllerIT {
         CartDTO dto = new CartDTO(null, null, null);
         String bodyJson = objectMapper.writeValueAsString(dto);
 
-        mockMvc.perform(put("/carts/order/" + randomId)
+        mockMvc.perform(put("/carts/confirm/" + randomId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(bodyJson))
                 .andExpect(status().isBadRequest());
@@ -217,7 +217,7 @@ public class CartControllerIT {
         );
         String bodyJson = objectMapper.writeValueAsString(dto);
 
-        mockMvc.perform(put("/carts/order/" + activeCartId)
+        mockMvc.perform(put("/carts/confirm/" + activeCartId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(bodyJson))
                 .andExpect(status().isOk())
@@ -245,7 +245,7 @@ public class CartControllerIT {
         String json = objectMapper.writeValueAsString(dto);
 
         mockMvc.perform(
-                        put("/carts/order/" + pendingCartId)
+                        put("/carts/confirm/" + pendingCartId)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(json)
                 )
@@ -260,7 +260,7 @@ public class CartControllerIT {
 
     @Test
     void should_Return400_whenRequestBodyMissingRequiredFields() throws Exception {
-        mockMvc.perform(put("/carts/order/" + activeCartId)
+        mockMvc.perform(put("/carts/confirm/" + activeCartId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
                 .andExpect(status().isBadRequest());
