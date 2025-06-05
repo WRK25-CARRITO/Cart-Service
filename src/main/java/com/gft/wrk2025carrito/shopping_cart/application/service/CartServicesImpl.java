@@ -1,5 +1,6 @@
 package com.gft.wrk2025carrito.shopping_cart.application.service;
 
+import com.gft.wrk2025carrito.shopping_cart.application.helper.CartCalculator;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.Cart;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cartDetail.CartDetail;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.CartId;
@@ -24,6 +25,7 @@ public class CartServicesImpl implements CartServices {
     private final CartRepository cartRepository;
     private final CartFactory cartFactory;
     private final RestTemplate restTemplate;
+    private final CartCalculator cartCalculator;
 
     @Override
     @Transactional
@@ -44,6 +46,20 @@ public class CartServicesImpl implements CartServices {
 
         return cartRepository.findById(id);
 
+    }
+
+    @Override
+    public Cart showTotalPriceAndWeight(UUID id) throws Exception {
+        if(id == null) {
+            throw new IllegalArgumentException("Id cannot be null");
+        }
+        if(!cartRepository.existsById(id)) {
+            throw new IllegalArgumentException("Cart with id " + id + " does not exist");
+        }
+
+        Cart cart = cartRepository.findById(id);
+
+        return cartCalculator.calculateAndUpdateCart(cart);
     }
 
     @Override
@@ -101,7 +117,7 @@ public class CartServicesImpl implements CartServices {
         }
 
         List<CartDetail> newCartDetails = productQuantities.entrySet().stream()
-                .map(entry -> CartDetail.build(entry.getKey(), entry.getValue(), BigDecimal.ZERO, 0.0))
+                .map(entry -> CartDetail.build(entry.getKey(), entry.getValue(),BigDecimal.ZERO, 0.0))
                 .toList();
 
         cart.setCartDetails(newCartDetails);

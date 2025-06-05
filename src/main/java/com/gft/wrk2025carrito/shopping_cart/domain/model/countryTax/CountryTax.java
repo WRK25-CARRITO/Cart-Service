@@ -1,11 +1,11 @@
 package com.gft.wrk2025carrito.shopping_cart.domain.model.countryTax;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.*;
 
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Setter
+@NoArgsConstructor
 public class CountryTax {
 
     private CountryTaxId id;
