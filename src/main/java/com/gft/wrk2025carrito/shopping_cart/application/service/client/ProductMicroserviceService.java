@@ -9,8 +9,8 @@ import java.util.Map;
 
 public interface ProductMicroserviceService {
 
-    public Map<Long,Product> getProductsFromCart(Cart cart);
+    Map<Long,Product> getProductsFromCart(Cart cart);
 
-    public List<Promotion> getAllApplicablePromotions(Cart cart);
+    List<Promotion> getAllApplicablePromotions(Cart cart);
 
 }
