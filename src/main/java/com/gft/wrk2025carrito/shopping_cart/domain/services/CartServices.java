@@ -30,4 +30,6 @@ public interface CartServices {
     Cart getById(UUID id);
 
     Cart updateState(UUID cartId, CartDTO cartDTO);
+
+    Cart showTotalPriceAndWeight(UUID id) throws Exception;
 }

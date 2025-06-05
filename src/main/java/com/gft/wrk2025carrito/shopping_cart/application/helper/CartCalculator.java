@@ -31,6 +31,12 @@ public class CartCalculator {
     );
 
     public Cart calculateAndUpdateCart(Cart cart) throws Exception {
+        if (cart.getCartDetails() == null || cart.getCartDetails().isEmpty()) {
+            cart.setTotalPrice(BigDecimal.ZERO);
+            cart.setTotalWeight(0.0);
+            return cart;
+        }
+
         Map<Long, Product> productMap = productsMicroserviceService.getProductsFromCart(cart);
         List<Promotion> promotions = productsMicroserviceService.getAllApplicablePromotions(cart);
         updateCartDetailsFromProducts(cart, productMap);
@@ -124,6 +130,7 @@ public class CartCalculator {
     }
 
     private static void updateCartDetailsFromProducts(Cart cart, Map<Long, Product> productMap) {
+
         for (CartDetail detail : cart.getCartDetails()) {
             Product product = productMap.get(detail.getProductId());
             BigDecimal basePrice = product.getPrice().multiply(BigDecimal.valueOf(detail.getQuantity()));

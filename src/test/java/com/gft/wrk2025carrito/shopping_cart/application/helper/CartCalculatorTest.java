@@ -18,10 +18,10 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -80,6 +80,30 @@ class CartCalculatorTest {
         assertNotNull(result);
         assertEquals(new BigDecimal("25.00"), result.getTotalPrice());
         assertEquals(3.0, result.getTotalWeight());
+    }
+
+    @Test
+    void testCalculateAndUpdateCart_ACTIVE_with_NoCartDetails() throws Exception {
+        cart.setState(CartState.ACTIVE);
+
+        cart.setCartDetails(null);
+        Cart result = cartCalculator.calculateAndUpdateCart(cart);
+
+        assertNotNull(result);
+        assertEquals(BigDecimal.ZERO, result.getTotalPrice());
+        assertEquals(0.0, result.getTotalWeight());
+    }
+
+    @Test
+    void testCalculateAndUpdateCart_ACTIVE_with_EmptyCartDetails() throws Exception {
+     cart.setState(CartState.ACTIVE);
+     cart.setCartDetails(Collections.emptyList());
+
+     Cart result = cartCalculator.calculateAndUpdateCart(cart);
+
+    assertNotNull(result);
+    assertEquals(BigDecimal.ZERO, result.getTotalPrice());
+    assertEquals(0.0, result.getTotalWeight());
     }
 
     @Test
