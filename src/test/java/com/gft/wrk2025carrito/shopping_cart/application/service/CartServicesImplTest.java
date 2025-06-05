@@ -1,5 +1,6 @@
 package com.gft.wrk2025carrito.shopping_cart.application.service;
 
+import com.gft.wrk2025carrito.shopping_cart.application.helper.CartCalculator;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.Cart;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.CartId;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.CartState;
@@ -16,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
+import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -36,6 +38,9 @@ class CartServicesImplTest {
 
     @Mock
     private RestTemplate restTemplate;
+
+    @Mock
+    private CartCalculator cartCalculator;
 
     @InjectMocks
     private CartServicesImpl cartService;
@@ -275,4 +280,63 @@ class CartServicesImplTest {
         verify(repository).create(any(Cart.class));
     }
 
+    @Test
+    void showTotalPriceAndWeight_nullId_throwsIllegalArgumentException() {
+
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> cartService.showTotalPriceAndWeight(null)
+        );
+        assertEquals("Id cannot be null", exception.getMessage());
+
+        verifyNoInteractions(repository);
+        verifyNoInteractions(cartCalculator);
+    }
+
+    @Test
+    void showTotalPriceAndWeight_cartNotFound_throwsIllegalArgumentException() {
+        UUID id = UUID.randomUUID();
+
+        when(repository.existsById(id)).thenReturn(false);
+
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> cartService.showTotalPriceAndWeight(id)
+        );
+        assertEquals("Cart with id " + id + " does not exist", exception.getMessage());
+
+        verify(repository, times(1)).existsById(id);
+        verify(repository, never()).findById(any(UUID.class));
+        verifyNoInteractions(cartCalculator);
+    }
+
+    @Test
+    void showTotalPriceAndWeight_success_returnsCalculatedCart() throws Exception {
+        CartId  cartId = new CartId();
+        UUID id = cartId.id();
+
+        Cart mockCart = mock(Cart.class);
+
+        Cart calculatedCart = mock(Cart.class);
+        when(calculatedCart.getId()).thenReturn(cartId);
+        when(calculatedCart.getState()).thenReturn(CartState.ACTIVE);
+        when(calculatedCart.getTotalPrice()).thenReturn(BigDecimal.valueOf(123.45));
+        when(calculatedCart.getTotalWeight()).thenReturn(67.89);
+
+        when(repository.existsById(id)).thenReturn(true);
+        when(repository.findById(id)).thenReturn(mockCart);
+        when(cartCalculator.calculateAndUpdateCart(mockCart)).thenReturn(calculatedCart);
+
+        Cart result = cartService.showTotalPriceAndWeight(id);
+
+        assertNotNull(result);
+        assertEquals(cartId,          result.getId());
+        assertEquals(CartState.ACTIVE, result.getState());
+        assertNotNull(result.getTotalPrice());
+        assertNotNull(result.getTotalWeight());
+
+        verify(repository,       times(1)).existsById(id);
+        verify(repository,       times(1)).findById(id);
+        verify(cartCalculator,   times(1)).calculateAndUpdateCart(mockCart);
+    }
 }
