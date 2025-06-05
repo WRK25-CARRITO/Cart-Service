@@ -33,6 +33,11 @@ public class CartEntityRepositoryImpl implements CartRepository {
     }
 
     @Override
+    public List<Cart> findAllActive() {
+        return jpaRepository.findByState(CartState.ACTIVE).stream().map(cartFactory::toDomain).collect(Collectors.toList());
+    }
+
+    @Override
     public void deleteById(UUID id) {
         jpaRepository.deleteById(id);
     }
