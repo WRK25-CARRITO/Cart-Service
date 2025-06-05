@@ -2,6 +2,7 @@ package com.gft.wrk2025carrito.shopping_cart.infrastructure.web.it;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gft.wrk2025carrito.shopping_cart.application.dto.CartDTO;
+import com.gft.wrk2025carrito.shopping_cart.application.service.client.OrderMicroserviceService;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.CartState;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.countryTax.CountryTax;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.countryTax.CountryTaxId;
@@ -14,11 +15,16 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Primary;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
 
@@ -32,6 +38,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@Import(CartControllerIT.StubOrderServiceConfig.class)
 @ActiveProfiles("test")
 @Sql(scripts = {"/data/h2/schema.sql", "/data/h2/data.sql"})
 public class CartControllerIT {
@@ -48,6 +55,15 @@ public class CartControllerIT {
     private UUID activeCartId;
     private UUID pendingCartId;
     private UUID existingUserId;
+
+    @TestConfiguration
+    static class StubOrderServiceConfig {
+        @Bean
+        @Primary
+        public OrderMicroserviceService orderMicroserviceService() {
+            return cart -> Collections.emptyList();
+        }
+    }
 
     @BeforeEach
     void setUp() {

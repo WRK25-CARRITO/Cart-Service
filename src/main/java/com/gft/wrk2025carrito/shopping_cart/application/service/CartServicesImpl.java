@@ -30,10 +30,8 @@ public class CartServicesImpl implements CartServices {
     private final CartFactory cartFactory;
     private final RestTemplate restTemplate;
     private final CartCalculator cartCalculator;
-    private static OrderMicroserviceService ordersMicroserviceService;
+    private final OrderMicroserviceService orderMicroserviceService;
 
-    private static final String PRODUCTS_URL = "https://workshop-7uvd.onrender.com/api/v1/products";
-    private static final String PROMOTIONS_URL = "";
 
     @Override
     @Transactional
@@ -211,7 +209,7 @@ public class CartServicesImpl implements CartServices {
 
         updatedCart.setState(CartState.PENDING);
 
-        updatedCart.setPromotionIds(ordersMicroserviceService.getAllOrderPromotions(updatedCart));
+        updatedCart.setPromotionIds(orderMicroserviceService.getAllOrderPromotions(updatedCart));
         updatedCart.setUpdatedAt(new Date());
 
         cartRepository.save(cartFactory.toEntity(updatedCart));

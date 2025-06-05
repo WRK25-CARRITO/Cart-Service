@@ -83,6 +83,67 @@ class CartCalculatorTest {
     }
 
     @Test
+    void testCalculateAndUpdateCart_ACTIVE_totalWeight10() throws Exception {
+        CartDetail detail = new CartDetail();
+        detail.setProductId(1L);
+        detail.setQuantity(4);
+        cart.setCartDetails(List.of(detail));
+        cart.setState(CartState.ACTIVE);
+
+        Cart result = cartCalculator.calculateAndUpdateCart(cart);
+
+        assertNotNull(result);
+        assertEquals(6.0, result.getTotalWeight());
+        assertEquals(new BigDecimal("50.00"), result.getTotalPrice());
+    }
+
+    @Test
+    void testCalculateAndUpdateCart_ACTIVE_totalWeight20() throws Exception {
+        CartDetail detail = new CartDetail();
+        detail.setProductId(1L);
+        detail.setQuantity(8);
+        cart.setCartDetails(List.of(detail));
+        cart.setState(CartState.ACTIVE);
+
+        Cart result = cartCalculator.calculateAndUpdateCart(cart);
+
+        assertNotNull(result);
+        assertEquals(12.0, result.getTotalWeight());
+        assertEquals(new BigDecimal("100.00"), result.getTotalPrice());
+    }
+
+    @Test
+    void testCalculateAndUpdateCart_ACTIVE_totalWeightPlus20() throws Exception {
+        CartDetail detail = new CartDetail();
+        detail.setProductId(1L);
+        detail.setQuantity(15);
+        cart.setCartDetails(List.of(detail));
+        cart.setState(CartState.ACTIVE);
+
+        Cart result = cartCalculator.calculateAndUpdateCart(cart);
+
+        assertNotNull(result);
+        assertEquals(22.5, result.getTotalWeight());
+        assertEquals(new BigDecimal("200.00"), result.getTotalPrice());
+    }
+
+    @Test
+    void testCalculateAndUpdateCart_ACTIVE_totalWeightIs0() throws Exception {
+        CartDetail detail = new CartDetail();
+        detail.setProductId(1L);
+        detail.setQuantity(0);
+        cart.setCartDetails(List.of(detail));
+        cart.setState(CartState.ACTIVE);
+
+        Cart result = cartCalculator.calculateAndUpdateCart(cart);
+
+        assertNotNull(result);
+        assertEquals(0.0, result.getTotalWeight());
+        assertEquals(new BigDecimal("0.00"), result.getTotalPrice());
+    }
+
+
+    @Test
     void testCalculateAndUpdateCart_PENDING() throws Exception {
         cart.setState(CartState.PENDING);
 

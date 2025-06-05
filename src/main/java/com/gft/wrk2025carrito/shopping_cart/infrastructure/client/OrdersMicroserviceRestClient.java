@@ -20,7 +20,7 @@ import java.util.Optional;
 public class OrdersMicroserviceRestClient implements OrderMicroserviceService {
 
     private final RestTemplate restTemplate;
-    @Value("https://52.20.192.150:8080/offers")
+    @Value("${app.ordersBackendURL}")
     String url;
 
     public OrdersMicroserviceRestClient(RestTemplate restTemplate) {

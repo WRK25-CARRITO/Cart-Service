@@ -2,6 +2,7 @@ package com.gft.wrk2025carrito.shopping_cart.application.service;
 
 import com.gft.wrk2025carrito.shopping_cart.application.dto.CartDTO;
 import com.gft.wrk2025carrito.shopping_cart.application.helper.CartCalculator;
+import com.gft.wrk2025carrito.shopping_cart.application.service.client.OrderMicroserviceService;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.Cart;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.CartId;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.CartState;
@@ -45,6 +46,9 @@ class CartServicesImplTest {
 
     @Mock
     private CartCalculator cartCalculator;
+
+    @Mock
+    private OrderMicroserviceService orderMicroserviceService;
 
     @InjectMocks
     private CartServicesImpl cartService;

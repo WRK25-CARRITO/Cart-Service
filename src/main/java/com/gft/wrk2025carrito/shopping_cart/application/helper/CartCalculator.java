@@ -69,7 +69,7 @@ public class CartCalculator {
     }
 
     private static BigDecimal calculateShippingCost(Double totalWeight) {
-        if (totalWeight == null) {
+        if (totalWeight == 0.0) {
             return BigDecimal.ZERO;
         }
 
