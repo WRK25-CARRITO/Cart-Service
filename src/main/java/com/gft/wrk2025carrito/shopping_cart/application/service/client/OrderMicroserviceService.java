@@ -7,5 +7,5 @@ import java.util.Map;
 
 public interface OrderMicroserviceService {
 
-    List<Long> getAllOrderPromotions(Cart cart);
+    List<Long> getAllOrderPromotions(Map<Long,Integer> cartDetailProducts);
 }

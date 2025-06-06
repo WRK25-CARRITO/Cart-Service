@@ -216,6 +216,7 @@ public class CartServicesImpl implements CartServices {
         }
 
         Cart updatedCart;
+
         try {
             updatedCart = cartCalculator.calculateAndUpdateCart(cart);
         } catch (Exception e) {
@@ -224,7 +225,16 @@ public class CartServicesImpl implements CartServices {
 
         updatedCart.setState(CartState.PENDING);
 
-        updatedCart.setPromotionIds(orderMicroserviceService.getAllOrderPromotions(updatedCart));
+        Map<Long,Integer> promotionDetails = updatedCart.getCartDetails().stream()
+                .collect(Collectors.toMap(
+                        CartDetail::getProductId,
+                        CartDetail::getQuantity,
+                        Integer::sum
+                ));
+
+        List<Long> promoIds = orderMicroserviceService.getAllOrderPromotions(promotionDetails);
+        updatedCart.setPromotionIds(promoIds);
+
         updatedCart.setUpdatedAt(new Date());
 
         cartRepository.save(cartFactory.toEntity(updatedCart));
