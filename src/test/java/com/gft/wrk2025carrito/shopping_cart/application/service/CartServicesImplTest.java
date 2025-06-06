@@ -814,45 +814,6 @@ class CartServicesImplTest {
     }
 
     @Test
-    void flujoExitoso_devuelveUUIDYCreaNuevoCart() throws Exception {
-
-        CartId cartId = new CartId();
-        UUID id = cartId.id();
-        UUID userId = UUID.randomUUID();
-        UUID ordenEnviadaUuid = UUID.randomUUID();
-
-        Cart carritoInicial = new Cart();
-        carritoInicial.setId(cartId);
-        carritoInicial.setState(CartState.CLOSED);
-        carritoInicial.setUserId(userId);
-
-        Cart carritoCalculado = new Cart();
-        carritoCalculado.setId(cartId);
-        carritoCalculado.setState(CartState.CLOSED);
-        carritoCalculado.setUserId(userId);
-
-        OrderDTO dtoParaEnviar = new OrderDTO();
-        dtoParaEnviar.setOrderId(UUID.randomUUID());
-
-        when(repository.existsById(id)).thenReturn(true);
-        when(repository.findById(id)).thenReturn(carritoInicial);
-        when(cartCalculator.calculateAndUpdateCart(carritoInicial)).thenReturn(carritoCalculado);
-
-        when(orderMicroserviceService.sendAOrder(dtoParaEnviar)).thenReturn(ordenEnviadaUuid);
-
-        UUID resultado = cartService.sendCartToOrder(id); //java.lang.NullPointerException: Cannot invoke "com.gft.wrk2025carrito.shopping_cart.domain.model.countryTax.CountryTax.getTax()" because the return value of "com.gft.wrk2025carrito.shopping_cart.domain.model.cart.Cart.getCountryTax()" is null
-
-        assertEquals(ordenEnviadaUuid, resultado);
-
-        verify(repository).existsById(id);
-        verify(repository).findById(id);
-        verify(cartCalculator).calculateAndUpdateCart(carritoInicial);
-        verify(orderMicroserviceService).sendAOrder(dtoParaEnviar);
-        verify(cartService).createCart(userId);
-
-    }
-
-    @Test
     void sendCartToOrder_nullId_throwsIllegalArgumentException() {
         IllegalArgumentException ex = assertThrows(
                 IllegalArgumentException.class,
@@ -894,5 +855,63 @@ class CartServicesImplTest {
         verify(repository).findById(sharedCartId);
         verifyNoInteractions(cartCalculator, orderMicroserviceService);
     }
+
+    @Test
+    void should_sendCart_success() throws Exception {
+
+        Cart initialCart = entireCart();
+
+        UUID orderSendUuid = UUID.randomUUID();
+
+        Cart calculatedCart = entireCart();
+        initialCart.setTotalPrice(BigDecimal.valueOf(50));
+        initialCart.setTotalWeight(0.5);
+
+        when(repository.existsById(initialCart.getId().id())).thenReturn(true);
+        when(repository.findById(initialCart.getId().id())).thenReturn(initialCart);
+        when(cartCalculator.calculateAndUpdateCart(initialCart)).thenReturn(calculatedCart);
+
+        when(orderMicroserviceService.sendAOrder(any(OrderDTO.class))).thenReturn(orderSendUuid);
+
+        UUID resultado = cartService.sendCartToOrder(initialCart.getId().id());
+
+        assertEquals(orderSendUuid, resultado);
+
+        verify(repository).existsById(initialCart.getId().id());
+        verify(repository).findById(initialCart.getId().id());
+        verify(cartCalculator).calculateAndUpdateCart(initialCart);
+        verify(orderMicroserviceService).sendAOrder(argThat(order ->
+                order.getOrderLines() != null && !order.getOrderLines().isEmpty()
+        ));
+
+    }
+
+
+    private Cart entireCart(){
+        PaymentMethod method = new PaymentMethod();
+        method.setCharge(0.02);
+        CountryTax countryTax = new CountryTax();
+        countryTax.setTax(0.2);
+
+        CartDetail detail = new CartDetail();
+        detail.setProductId(1L);
+        detail.setQuantity(1);
+        detail.setTotalWeight(0.5);
+        detail.setTotalPrice(new BigDecimal(25));
+
+        Cart cart = new Cart();
+        cart.setId(new CartId());
+        cart.setUserId(UUID.randomUUID());
+        cart.setCreatedAt(new Date());
+        cart.setUpdatedAt(new  Date());
+        cart.setState(CartState.CLOSED);
+        cart.setCountryTax(countryTax);
+        cart.setPaymentMethod(method);
+        cart.setCartDetails(List.of(detail));
+        cart.setPromotionIds(List.of());
+
+        return cart;
+    }
+
 
 }

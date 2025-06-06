@@ -298,10 +298,11 @@ public class CartServicesImpl implements CartServices {
     }
 
     private OrderDTO createOrderFromCart(Cart cart){
+
         OrderDTO order = OrderDTO.builder()
                 .orderId(cart.getId().id())
                 .userId(cart.getUserId())
-                .orderDate(new  Date())
+                .orderDate(new Date())
                 .totalPrice(cart.getTotalPrice())
                 .totalPrice(cart.getTotalPrice())
                 .countryTax(cart.getCountryTax().getTax())
