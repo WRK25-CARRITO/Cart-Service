@@ -2,6 +2,7 @@ package com.gft.wrk2025carrito.shopping_cart.domain.services;
 
 import com.gft.wrk2025carrito.shopping_cart.application.dto.CartDTO;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.Cart;
+import jakarta.transaction.Transactional;
 
 import java.util.List;
 import java.util.Map;
@@ -30,6 +31,9 @@ public interface CartServices {
     Cart getById(UUID id);
 
     Cart updateState(UUID cartId, CartDTO cartDTO);
+
+    @Transactional
+    List<Cart> getAllActiveCarts();
 
     Cart showTotalPriceAndWeight(UUID id) throws Exception;
 

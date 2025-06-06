@@ -12,6 +12,7 @@ import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.CartState;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cartDetail.CartDetail;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.countryTax.CountryTax;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.paymentMethod.PaymentMethod;
+import com.gft.wrk2025carrito.shopping_cart.infrastructure.messages.CartProducer;
 import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.factory.CartFactory;
 import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.repository.impl.CartEntityRepositoryImpl;
 import org.junit.jupiter.api.BeforeEach;
@@ -52,6 +53,9 @@ class CartServicesImplTest {
 
     @Mock
     private CartCalculator cartCalculator;
+
+    @Mock
+    private CartProducer cartProducer;
 
     @Mock
     private OrderMicroserviceService orderMicroserviceService;
@@ -102,6 +106,18 @@ class CartServicesImplTest {
         assertNotNull(result);
         verify(repository).findAll();
     }
+
+    @Test
+    void getAllActiveCarts(){
+        when(repository.findAllActive()).thenReturn(Collections.emptyList());
+
+        List <Cart> activeCartResult = cartService.getAllActiveCarts();
+
+        assertNotNull(activeCartResult);
+        verify(repository).findAllActive();
+
+    }
+
 
     @Test
     void getCartById_ok() {
@@ -430,12 +446,13 @@ class CartServicesImplTest {
 
         Cart carritoCerrado = mock(Cart.class);
         when(carritoCerrado.getState()).thenReturn(CartState.CLOSED);
-
+        CartId fakeCartId = new CartId(sharedCartId);
+        when(carritoCerrado.getId()).thenReturn(fakeCartId);
+        UUID fakeUserId = UUID.randomUUID();
+        when(carritoCerrado.getUserId()).thenReturn(fakeUserId);
         when(carritoCerrado.getCountryTax()).thenReturn(countryTaxMock);
         when(carritoCerrado.getPaymentMethod()).thenReturn(paymentMethodMock);
-
-        when(cartCalculator.calculateAndUpdateCart(eq(cartInicial)))
-                .thenReturn(carritoCerrado);
+        when(cartCalculator.calculateAndUpdateCart(eq(cartInicial))).thenReturn(carritoCerrado);
 
         Cart resultado = cartService.updateState(sharedCartId, dto);
 
@@ -447,6 +464,11 @@ class CartServicesImplTest {
 
         verify(cartCalculator, times(1)).calculateAndUpdateCart(eq(cartInicial));
         verify(repository, times(1)).save(any());
+        verify(cartProducer, times(1)).sendCartStateChanged(argThat(orderDTO ->
+                orderDTO.userId().equals(fakeUserId) &&
+                        orderDTO.cartId().equals(sharedCartId) &&
+                        orderDTO.state().equals(CartState.CLOSED.toString())
+        ));
     }
 
     @Test
@@ -751,6 +773,15 @@ class CartServicesImplTest {
 
         verify(cartCalculator, never()).calculateAndUpdateCart(any());
         verify(repository, never()).save(any());
+    }
+
+    @Test
+    void getById_nullId_ThrowsIllegalArgumentException() {
+        IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> cartService.getById(null)
+        );
+        assertEquals("Id cannot be null", ex.getMessage());
     }
 
     @Test

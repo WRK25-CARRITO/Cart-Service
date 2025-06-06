@@ -10,6 +10,7 @@ import com.gft.wrk2025carrito.shopping_cart.domain.model.countryTax.CountryTax;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.countryTax.CountryTaxId;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.paymentMethod.PaymentMethod;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.paymentMethod.PaymentMethodId;
+import com.gft.wrk2025carrito.shopping_cart.infrastructure.messages.CartProducer;
 import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.repository.CartEntityJpaRepository;
 import net.minidev.json.JSONArray;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,11 +19,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -40,8 +43,6 @@ import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
-
-
 @SpringBootTest
 @AutoConfigureMockMvc
 @Import(CartControllerIT.StubOrderServiceConfig.class)
@@ -57,6 +58,9 @@ public class CartControllerIT {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @MockitoBean
+    private CartProducer cartProducer;
 
     private UUID activeCartId;
     private UUID pendingCartId;
@@ -242,16 +246,14 @@ public class CartControllerIT {
             cartRepository.save(entity);
         });
 
-        CartDTO dto = new CartDTO(
-                CartState.PENDING,
-                null,
-                null
-        );
+        CartDTO dto = new CartDTO(CartState.PENDING, null, null);
         String bodyJson = objectMapper.writeValueAsString(dto);
 
-        mockMvc.perform(put("/api/v1/carts/confirm/" + activeCartId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(bodyJson))
+        mockMvc.perform(
+                        put("/api/v1/carts/confirm/" + activeCartId)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(bodyJson)
+                )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id.id", is(activeCartId.toString())))
                 .andExpect(jsonPath("$.state", is("PENDING")))

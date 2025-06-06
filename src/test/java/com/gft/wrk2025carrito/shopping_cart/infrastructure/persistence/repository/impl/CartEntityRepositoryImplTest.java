@@ -56,6 +56,12 @@ public class CartEntityRepositoryImplTest {
         verify(jpaRepository).deleteById(cartId);
     }
 
+    @Test
+    void should_getAllActiveCarts(){
+        repository.findAllActive();
+        verify(jpaRepository).findByState(CartState.ACTIVE);
+    }
+
 
     @Test
     void should_ReturnTrue_WhenCartExists() {

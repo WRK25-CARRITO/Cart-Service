@@ -32,4 +32,9 @@ public class OrderDTO {
 
 
 
+public record OrderDTO(
+        UUID userId,
+        UUID cartId,
+        String state
+) {
 }
