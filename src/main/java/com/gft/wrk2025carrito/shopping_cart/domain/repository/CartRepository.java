@@ -10,6 +10,8 @@ import java.util.UUID;
 
 public interface CartRepository {
 
+    List<Cart> findAllActive();
+
     void deleteById(UUID id);
 
     boolean existsById(UUID id);

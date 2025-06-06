@@ -101,6 +101,18 @@ class CartServicesImplTest {
     }
 
     @Test
+    void getAllActiveCarts(){
+        when(repository.findAllActive()).thenReturn(Collections.emptyList());
+
+        List <Cart> activeCartResult = cartService.getAllActiveCarts();
+
+        assertNotNull(activeCartResult);
+        verify(repository).findAllActive();
+
+    }
+
+
+    @Test
     void getCartById_ok() {
         Cart mockCart = mock(Cart.class);
 
