@@ -14,12 +14,11 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 @AllArgsConstructor
 public class OrderLineDTO {
-    private Long productId;
+    private Long product;
     private Integer quantity;
     private Double lineWeight;
-    private Double productPrice;
-    private BigDecimal LinePrice;
-    private Integer returnQuality;
+    private BigDecimal linePrice;
+    private Integer returnedQuantity;
 
     private static OrderLineDTO fromCartDetail(CartDetail detail) {
         if (detail == null) {
@@ -27,12 +26,11 @@ public class OrderLineDTO {
         }
 
         return OrderLineDTO.builder()
-                .productId(detail.getProductId())
+                .product(detail.getProductId())
                 .quantity(detail.getQuantity())
                 .lineWeight(detail.getTotalWeight())
-                .productPrice(null)
-                .LinePrice(detail.getTotalPrice())
-                .returnQuality(null)
+                .linePrice(detail.getTotalPrice())
+                .returnedQuantity(null)
                 .build();
     }
 

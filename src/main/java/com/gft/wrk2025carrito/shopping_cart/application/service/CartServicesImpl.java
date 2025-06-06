@@ -3,6 +3,7 @@ package com.gft.wrk2025carrito.shopping_cart.application.service;
 import com.gft.wrk2025carrito.shopping_cart.application.dto.CartDTO;
 import com.gft.wrk2025carrito.shopping_cart.application.dto.OrderDTO;
 import com.gft.wrk2025carrito.shopping_cart.application.dto.OrderLineDTO;
+import com.gft.wrk2025carrito.shopping_cart.application.dto.OrderOffers;
 import com.gft.wrk2025carrito.shopping_cart.application.helper.CartCalculator;
 import com.gft.wrk2025carrito.shopping_cart.application.service.client.OrderMicroserviceService;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.Cart;
@@ -20,6 +21,7 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.math.BigDecimal;
 import java.util.stream.Collectors;
@@ -299,15 +301,18 @@ public class CartServicesImpl implements CartServices {
 
     private OrderDTO createOrderFromCart(Cart cart){
 
+        UUID orderId = cart.getId().id();
+
+        List<OrderOffers> orderOffers = fromPromotionIds(cart.getPromotionIds(), orderId);
+
         OrderDTO order = OrderDTO.builder()
-                .orderId(cart.getId().id())
+                .id(orderId)
                 .userId(cart.getUserId())
-                .orderDate(new Date())
-                .totalPrice(cart.getTotalPrice())
+                .creationDate(LocalDateTime.now())
                 .totalPrice(cart.getTotalPrice())
                 .countryTax(cart.getCountryTax().getTax())
                 .paymentMethod(cart.getPaymentMethod().getCharge())
-                .ordersOffers(cart.getPromotionIds())
+                .ordersOffers(orderOffers)
                 .orderReturn(false)
                 .build();
 
@@ -315,6 +320,21 @@ public class CartServicesImpl implements CartServices {
         order.setOrderLines(orderLines);
 
         return order;
+    }
+
+    public static List<OrderOffers> fromPromotionIds(List<Long> promotionIds, UUID orderId) {
+        if (promotionIds == null) {
+            return List.of();
+        }
+
+        return promotionIds.stream()
+                .map(promoId -> {
+                    OrderOffers oo = new OrderOffers();
+                    oo.setOrderId(orderId);
+                    oo.setOfferId(promoId);
+                    return oo;
+                })
+                .collect(Collectors.toList());
     }
 
 }

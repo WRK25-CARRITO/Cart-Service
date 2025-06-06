@@ -860,12 +860,46 @@ class CartServicesImplTest {
     void should_sendCart_success() throws Exception {
 
         Cart initialCart = entireCart();
+        initialCart.setPromotionIds(null);
 
         UUID orderSendUuid = UUID.randomUUID();
 
         Cart calculatedCart = entireCart();
-        initialCart.setTotalPrice(BigDecimal.valueOf(50));
-        initialCart.setTotalWeight(0.5);
+        calculatedCart.setTotalPrice(BigDecimal.valueOf(50));
+        calculatedCart.setTotalWeight(0.5);
+        calculatedCart.setPromotionIds(null);
+
+        when(repository.existsById(initialCart.getId().id())).thenReturn(true);
+        when(repository.findById(initialCart.getId().id())).thenReturn(initialCart);
+        when(cartCalculator.calculateAndUpdateCart(initialCart)).thenReturn(calculatedCart);
+
+        when(orderMicroserviceService.sendAOrder(any(OrderDTO.class))).thenReturn(orderSendUuid);
+
+        UUID resultado = cartService.sendCartToOrder(initialCart.getId().id());
+
+        assertEquals(orderSendUuid, resultado);
+
+        verify(repository).existsById(initialCart.getId().id());
+        verify(repository).findById(initialCart.getId().id());
+        verify(cartCalculator).calculateAndUpdateCart(initialCart);
+        verify(orderMicroserviceService).sendAOrder(argThat(order ->
+                order.getOrderLines() != null && !order.getOrderLines().isEmpty()
+        ));
+
+    }
+
+    @Test
+    void should_sendCart_success_withPromotions() throws Exception {
+
+        Cart initialCart = entireCart();
+        initialCart.setPromotionIds(List.of(1L));
+
+        UUID orderSendUuid = UUID.randomUUID();
+
+        Cart calculatedCart = entireCart();
+        calculatedCart.setTotalPrice(BigDecimal.valueOf(50));
+        calculatedCart.setTotalWeight(0.5);
+        calculatedCart.setPromotionIds(List.of(1L));
 
         when(repository.existsById(initialCart.getId().id())).thenReturn(true);
         when(repository.findById(initialCart.getId().id())).thenReturn(initialCart);

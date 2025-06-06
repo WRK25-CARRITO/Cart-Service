@@ -85,7 +85,6 @@ public class OrdersMicroserviceRestClient implements OrderMicroserviceService {
                     "Error sending a order " + status
             );
         }
-
         return response.getBody();
     }
 
