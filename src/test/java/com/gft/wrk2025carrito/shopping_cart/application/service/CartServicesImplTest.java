@@ -10,6 +10,7 @@ import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.CartState;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cartDetail.CartDetail;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.countryTax.CountryTax;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.paymentMethod.PaymentMethod;
+import com.gft.wrk2025carrito.shopping_cart.infrastructure.messages.CartProducer;
 import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.factory.CartFactory;
 import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.repository.impl.CartEntityRepositoryImpl;
 import org.junit.jupiter.api.BeforeEach;
@@ -48,6 +49,9 @@ class CartServicesImplTest {
 
     @Mock
     private CartCalculator cartCalculator;
+
+    @Mock
+    private CartProducer cartProducer;
 
     @Mock
     private OrderMicroserviceService orderMicroserviceService;
@@ -397,18 +401,17 @@ class CartServicesImplTest {
         Cart cartInicial = mock(Cart.class);
         when(cartInicial.getState()).thenReturn(CartState.ACTIVE);
         when(cartInicial.getCartDetails()).thenReturn(List.of(mock(CartDetail.class)));
-
-        when(repository.existsById(sharedCartId)).thenReturn(true);
         when(repository.findById(sharedCartId)).thenReturn(cartInicial);
 
         CartDTO dto = new CartDTO(CartState.PENDING, null, null);
 
-
         Cart carritoPendiente = mock(Cart.class);
         when(carritoPendiente.getState()).thenReturn(CartState.PENDING);
-
-        when(cartCalculator.calculateAndUpdateCart(eq(cartInicial)))
-                .thenReturn(carritoPendiente);
+        CartId fakeCartId = new CartId(sharedCartId);
+        when(carritoPendiente.getId()).thenReturn(fakeCartId);
+        UUID fakeUserId = UUID.randomUUID();
+        when(carritoPendiente.getUserId()).thenReturn(fakeUserId);
+        when(cartCalculator.calculateAndUpdateCart(eq(cartInicial))).thenReturn(carritoPendiente);
 
         Cart resultado = cartService.updateState(sharedCartId, dto);
 
@@ -417,6 +420,11 @@ class CartServicesImplTest {
 
         verify(cartCalculator, times(1)).calculateAndUpdateCart(eq(cartInicial));
         verify(repository, times(1)).save(any());
+        verify(cartProducer, times(1)).sendCartStateChanged(argThat(orderDTO ->
+                orderDTO.userId().equals(fakeUserId) &&
+                        orderDTO.cartId().equals(sharedCartId) &&
+                        orderDTO.state().equals(CartState.PENDING.toString())
+        ));
     }
 
     @Test
@@ -424,34 +432,34 @@ class CartServicesImplTest {
         Cart cartInicial = mock(Cart.class);
         when(cartInicial.getState()).thenReturn(CartState.PENDING);
         when(cartInicial.getCartDetails()).thenReturn(List.of(mock(CartDetail.class)));
-
-        when(repository.existsById(sharedCartId)).thenReturn(true);
         when(repository.findById(sharedCartId)).thenReturn(cartInicial);
-
-        var countryTaxMock = mock(com.gft.wrk2025carrito.shopping_cart.domain.model.countryTax.CountryTax.class);
-        var paymentMethodMock = mock(com.gft.wrk2025carrito.shopping_cart.domain.model.paymentMethod.PaymentMethod.class);
 
         CartDTO dto = new CartDTO(CartState.CLOSED, countryTaxMock, paymentMethodMock);
 
         Cart carritoCerrado = mock(Cart.class);
         when(carritoCerrado.getState()).thenReturn(CartState.CLOSED);
-
+        CartId fakeCartId = new CartId(sharedCartId);
+        when(carritoCerrado.getId()).thenReturn(fakeCartId);
+        UUID fakeUserId = UUID.randomUUID();
+        when(carritoCerrado.getUserId()).thenReturn(fakeUserId);
         when(carritoCerrado.getCountryTax()).thenReturn(countryTaxMock);
         when(carritoCerrado.getPaymentMethod()).thenReturn(paymentMethodMock);
-
-        when(cartCalculator.calculateAndUpdateCart(eq(cartInicial)))
-                .thenReturn(carritoCerrado);
+        when(cartCalculator.calculateAndUpdateCart(eq(cartInicial))).thenReturn(carritoCerrado);
 
         Cart resultado = cartService.updateState(sharedCartId, dto);
 
         assertEquals(carritoCerrado, resultado);
         assertEquals(CartState.CLOSED, resultado.getState());
-
         assertEquals(countryTaxMock, resultado.getCountryTax());
         assertEquals(paymentMethodMock, resultado.getPaymentMethod());
 
         verify(cartCalculator, times(1)).calculateAndUpdateCart(eq(cartInicial));
         verify(repository, times(1)).save(any());
+        verify(cartProducer, times(1)).sendCartStateChanged(argThat(orderDTO ->
+                orderDTO.userId().equals(fakeUserId) &&
+                        orderDTO.cartId().equals(sharedCartId) &&
+                        orderDTO.state().equals(CartState.CLOSED.toString())
+        ));
     }
 
     @Test
@@ -759,6 +767,15 @@ class CartServicesImplTest {
     }
 
     @Test
+    void getById_nullId_ThrowsIllegalArgumentException() {
+        IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> cartService.getById(null)
+        );
+        assertEquals("Id cannot be null", ex.getMessage());
+    }
+
+    @Test
     void showTotalPriceAndWeight_nullId_throwsIllegalArgumentException() {
 
         IllegalArgumentException exception = assertThrows(
@@ -817,4 +834,7 @@ class CartServicesImplTest {
         verify(repository,       times(1)).findById(id);
         verify(cartCalculator,   times(1)).calculateAndUpdateCart(mockCart);
     }
+
+
+
 }
