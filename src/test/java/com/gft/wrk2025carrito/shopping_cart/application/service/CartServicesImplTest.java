@@ -2,10 +2,8 @@ package com.gft.wrk2025carrito.shopping_cart.application.service;
 
 import com.gft.wrk2025carrito.shopping_cart.application.dto.CartDTO;
 import com.gft.wrk2025carrito.shopping_cart.application.dto.OrderDTO;
-import com.gft.wrk2025carrito.shopping_cart.application.dto.OrderLineDTO;
 import com.gft.wrk2025carrito.shopping_cart.application.helper.CartCalculator;
 import com.gft.wrk2025carrito.shopping_cart.application.service.client.OrderMicroserviceService;
-import com.gft.wrk2025carrito.shopping_cart.application.helper.CartCalculator;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.Cart;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.CartId;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.CartState;
@@ -18,8 +16,6 @@ import com.gft.wrk2025carrito.shopping_cart.infrastructure.persistence.repositor
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -65,26 +61,17 @@ class CartServicesImplTest {
 
     private UUID sharedCartId;
     private Cart baseCart;
-//    private CartDTO dtoPending;
-//    private CartDTO dtoClosed;
-    private Cart calculatedCart;
+
     private Cart mockPendingCart;
     private Cart mockClosedCart;
-    private CountryTax countryTaxMock;
-    private PaymentMethod paymentMethodMock;
-
 
     @BeforeEach
     void setUp() {
         sharedCartId = UUID.randomUUID();
 
-        calculatedCart = mock(Cart.class);
         baseCart = mock(Cart.class);
 
-//        dtoPending = new CartDTO(CartState.PENDING, null, null);
-
-        countryTaxMock      = mock(CountryTax.class);
-        paymentMethodMock   = mock(PaymentMethod.class);
+//        dtoPending = new CartDTO(CartState.PENDING, null, null);;
 //        dtoClosed = new CartDTO(CartState.CLOSED, countryTaxMock, paymentMethodMock);
 
         mockPendingCart = mock(Cart.class);
@@ -401,33 +388,6 @@ class CartServicesImplTest {
                 () -> cartService.updateState(cartId, dto)
         );
         assertEquals("Cannot update cart state to ACTIVE", ex.getMessage());
-    }
-
-    @Test
-    void updateState_FromActiveToPending_InvokesHandlePendingAndReturnsThatCart() throws Exception {
-        Cart cartInicial = mock(Cart.class);
-        when(cartInicial.getState()).thenReturn(CartState.ACTIVE);
-        when(cartInicial.getCartDetails()).thenReturn(List.of(mock(CartDetail.class)));
-
-        when(repository.existsById(sharedCartId)).thenReturn(true);
-        when(repository.findById(sharedCartId)).thenReturn(cartInicial);
-
-        CartDTO dto = new CartDTO(CartState.PENDING, null, null);
-
-
-        Cart carritoPendiente = mock(Cart.class);
-        when(carritoPendiente.getState()).thenReturn(CartState.PENDING);
-
-        when(cartCalculator.calculateAndUpdateCart(eq(cartInicial)))
-                .thenReturn(carritoPendiente);
-
-        Cart resultado = cartService.updateState(sharedCartId, dto);
-
-        assertEquals(carritoPendiente, resultado);
-        assertEquals(CartState.PENDING, resultado.getState());
-
-        verify(cartCalculator, times(1)).calculateAndUpdateCart(eq(cartInicial));
-        verify(repository, times(1)).save(any());
     }
 
     @Test

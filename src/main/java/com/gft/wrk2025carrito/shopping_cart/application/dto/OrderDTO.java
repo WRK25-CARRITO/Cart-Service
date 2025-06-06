@@ -30,11 +30,6 @@ public class OrderDTO {
     private Boolean orderReturn;
     private Map<Long, Integer> returnedProductQuantity;
 
-
-
-public record OrderDTO(
-        UUID userId,
-        UUID cartId,
-        String state
-) {
 }
+
+

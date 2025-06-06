@@ -1,5 +1,6 @@
 package com.gft.wrk2025carrito.shopping_cart.infrastructure.client;
 
+import com.gft.wrk2025carrito.shopping_cart.application.dto.OrderDTO;
 import com.gft.wrk2025carrito.shopping_cart.application.dto.Product;
 import com.gft.wrk2025carrito.shopping_cart.application.service.client.OrderMicroserviceService;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.Cart;
@@ -10,10 +11,7 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Component
 
@@ -31,29 +29,37 @@ public class OrdersMicroserviceRestClient implements OrderMicroserviceService {
     }
 
     @Override
-    public List<Long> getAllOrderPromotions(Cart cart) {
+    public UUID sendAOrder(OrderDTO order) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
 
-        List<Long> productIds = cart.getCartDetails().stream()
-                .map(CartDetail::getProductId)
-                .toList();
+        HttpEntity<OrderDTO> requestEntity = new HttpEntity<>(order, headers);
 
-        List<Integer> productQuantities = cart.getCartDetails().stream()
-                .map(CartDetail::getQuantity)
-                .toList();
+        ResponseEntity<UUID> response = restTemplate.exchange(
+                url,
+                HttpMethod.POST,
+                requestEntity,
+                new ParameterizedTypeReference<>() {}
+        );
 
-        Map<Long,Integer> cartDetailProducts = new HashMap<>();
-
-        int mapSize = Math.min(productIds.size(), productQuantities.size());
-        for (int i = 0; i < mapSize; i++) {
-            cartDetailProducts.put(productIds.get(i), productQuantities.get(i));
+        HttpStatusCode status = response.getStatusCode();
+        if (status != HttpStatus.CREATED) {
+            throw new IllegalStateException(
+                    "Error sending a order " + status
+            );
         }
+        return response.getBody();
+    }
+
+    @Override
+    public List<Long> getAllOrderPromotions(Map<Long,Integer> cartDetailProducts) {
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<Map<Long,Integer>> request = new HttpEntity<>(cartDetailProducts, headers);
 
         ResponseEntity<List<Long>> response = restTemplate.exchange(
-                url,
+                urlOffers,
                 HttpMethod.POST,
                 request,
                 new ParameterizedTypeReference<>() {}
@@ -67,29 +73,6 @@ public class OrdersMicroserviceRestClient implements OrderMicroserviceService {
                 .orElseThrow(() -> new IllegalStateException("No promotions can be applied"))
                 .stream()
                 .toList();
-    }
-
-    @Override
-    public UUID sendAOrder(OrderDTO order) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-
-        HttpEntity<OrderDTO> requestEntity = new HttpEntity<>(order, headers);
-
-        ResponseEntity<UUID> response = restTemplate.exchange(
-                urlOrders,
-                HttpMethod.POST,
-                requestEntity,
-                new ParameterizedTypeReference<UUID>() {}
-        );
-
-        HttpStatusCode status = response.getStatusCode();
-        if (status != HttpStatus.CREATED) {
-            throw new IllegalStateException(
-                    "Error sending a order " + status
-            );
-        }
-        return response.getBody();
     }
 
 }

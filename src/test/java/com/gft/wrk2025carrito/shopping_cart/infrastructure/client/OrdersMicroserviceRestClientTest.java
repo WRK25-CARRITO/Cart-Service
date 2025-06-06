@@ -1,8 +1,6 @@
 package com.gft.wrk2025carrito.shopping_cart.infrastructure.client;
 
 import com.gft.wrk2025carrito.shopping_cart.application.dto.OrderDTO;
-import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.Cart;
-import com.gft.wrk2025carrito.shopping_cart.domain.model.cartDetail.CartDetail;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.ParameterizedTypeReference;
@@ -25,7 +23,8 @@ class OrdersMicroserviceRestClientTest {
         restTemplate = mock(RestTemplate.class);
         client = new OrdersMicroserviceRestClient(restTemplate);
 
-        client.url = "http://localhost:8080/offers";
+        client.urlOffers= "http://localhost:8080/offers";
+        client.url= "http://localhost:8080/orders";
     }
 
     @Test

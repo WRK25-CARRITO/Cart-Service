@@ -1,6 +1,6 @@
 package com.gft.wrk2025carrito.shopping_cart.application.service;
 
-import com.gft.wrk2025carrito.shopping_cart.application.dto.CartDTO;
+import com.gft.wrk2025carrito.shopping_cart.application.dto.*;
 import com.gft.wrk2025carrito.shopping_cart.application.helper.CartCalculator;
 import com.gft.wrk2025carrito.shopping_cart.application.service.client.OrderMicroserviceService;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.Cart;
@@ -269,7 +269,7 @@ public class CartServicesImpl implements CartServices {
 
         cartRepository.save(cartFactory.toEntity(updatedCart));
 
-        cartProducer.sendCartStateChanged(new OrderDTO(updatedCart.getUserId(),updatedCart.getId().id(),updatedCart.getState().toString()));
+        cartProducer.sendCartStateChanged(new OrderDTORecord(updatedCart.getUserId(),updatedCart.getId().id(),updatedCart.getState().toString()));
 
         return updatedCart;
     }
@@ -311,7 +311,7 @@ public class CartServicesImpl implements CartServices {
 
         cartRepository.save(cartFactory.toEntity(updatedCart));
 
-        cartProducer.sendCartStateChanged(new OrderDTO(updatedCart.getUserId(),updatedCart.getId().id(),updatedCart.getState().toString()));
+        cartProducer.sendCartStateChanged(new OrderDTORecord(updatedCart.getUserId(),updatedCart.getId().id(),updatedCart.getState().toString()));
 
         return updatedCart;
     }
