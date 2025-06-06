@@ -1,6 +1,7 @@
 package com.gft.wrk2025carrito.shopping_cart.infrastructure.web;
 
 import com.gft.wrk2025carrito.shopping_cart.application.dto.CartDTO;
+import com.gft.wrk2025carrito.shopping_cart.application.dto.OrderDTO;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.Cart;
 import com.gft.wrk2025carrito.shopping_cart.domain.services.CartServices;
 import lombok.RequiredArgsConstructor;
@@ -64,6 +65,12 @@ public class CartController {
     @ResponseStatus(HttpStatus.OK)
     public Cart updateState(@PathVariable UUID id, @RequestBody CartDTO cartDTO) {
         return cartServices.updateState(id, cartDTO);
+    }
+
+    @PostMapping("/sendOrder/{id}")
+    @ResponseStatus(HttpStatus.CREATED)
+    public UUID sendOrder(@PathVariable UUID id) throws Exception {
+        return cartServices.sendCartToOrder(id);
     }
 
 }

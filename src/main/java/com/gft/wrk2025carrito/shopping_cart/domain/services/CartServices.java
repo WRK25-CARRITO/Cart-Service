@@ -36,4 +36,6 @@ public interface CartServices {
     List<Cart> getAllActiveCarts();
 
     Cart showTotalPriceAndWeight(UUID id) throws Exception;
+
+    UUID sendCartToOrder(UUID id) throws Exception;
 }

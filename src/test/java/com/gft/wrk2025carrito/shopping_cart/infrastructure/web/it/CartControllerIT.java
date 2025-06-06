@@ -2,7 +2,9 @@ package com.gft.wrk2025carrito.shopping_cart.infrastructure.web.it;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gft.wrk2025carrito.shopping_cart.application.dto.CartDTO;
+import com.gft.wrk2025carrito.shopping_cart.application.dto.OrderDTO;
 import com.gft.wrk2025carrito.shopping_cart.application.service.client.OrderMicroserviceService;
+import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.Cart;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.CartState;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.countryTax.CountryTax;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.countryTax.CountryTaxId;
@@ -17,7 +19,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
@@ -28,6 +29,7 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -68,7 +70,18 @@ public class CartControllerIT {
         @Bean
         @Primary
         public OrderMicroserviceService orderMicroserviceService() {
-            return cart -> Collections.emptyList();
+            return new OrderMicroserviceService() {
+
+                @Override
+                public UUID sendAOrder(OrderDTO order) {
+                    return UUID.randomUUID();
+                }
+
+                @Override
+                public List<Long> getAllOrderPromotions(Map<Long, Integer> cartDetailProducts) {
+                    return List.of();
+                }
+            };
         }
     }
 

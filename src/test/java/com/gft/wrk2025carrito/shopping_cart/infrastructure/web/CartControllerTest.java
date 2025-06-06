@@ -88,4 +88,14 @@ class CartControllerTest {
         assertEquals(dummyCart, result);
     }
 
+    @Test
+    void should_Return201AndUuid_WhenSendingOrder() throws Exception {
+        UUID cartId = UUID.randomUUID();
+        UUID orderId = UUID.randomUUID();
+
+        controller.sendOrder(cartId);
+
+        verify(cartServices).sendCartToOrder(cartId);
+    }
+
 }

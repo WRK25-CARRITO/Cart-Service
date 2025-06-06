@@ -1,13 +1,13 @@
 package com.gft.wrk2025carrito.shopping_cart.infrastructure.client;
 
+import com.gft.wrk2025carrito.shopping_cart.application.dto.OrderDTO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -22,7 +22,9 @@ class OrdersMicroserviceRestClientTest {
     void setUp() {
         restTemplate = mock(RestTemplate.class);
         client = new OrdersMicroserviceRestClient(restTemplate);
-        client.url = "http://localhost:8080/offers";
+
+        client.urlOffers= "http://localhost:8080/offers";
+        client.url= "http://localhost:8080/orders";
     }
 
     @Test
@@ -116,4 +118,65 @@ class OrdersMicroserviceRestClientTest {
         assertTrue(result.isEmpty());
     }
 
+
+    @Test
+    void sentAOrder_success() {
+        UUID expectedUuid = UUID.randomUUID();
+        ResponseEntity<UUID> responseEntity =
+                new ResponseEntity<>(expectedUuid, HttpStatus.CREATED);
+
+        when(restTemplate.exchange(
+                eq("http://localhost:8080/orders"),
+                eq(HttpMethod.POST),
+                any(HttpEntity.class),
+                any(ParameterizedTypeReference.class)
+        )).thenReturn(responseEntity);
+
+        OrderDTO dummyOrder = new OrderDTO();
+        UUID actualUuid = client.sendAOrder(dummyOrder);
+
+        assertEquals(expectedUuid, actualUuid);
+    }
+
+    @Test
+    void sentAOrder_errorOnStatus() {
+        ResponseEntity<UUID> badResponse =
+                new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+
+        when(restTemplate.exchange(
+                eq("http://localhost:8080/orders"),
+                eq(HttpMethod.POST),
+                any(HttpEntity.class),
+                any(ParameterizedTypeReference.class)
+        )).thenReturn(badResponse);
+
+        OrderDTO dummyOrder = new OrderDTO();
+        IllegalStateException ex = assertThrows(
+                IllegalStateException.class,
+                () -> client.sendAOrder(dummyOrder)
+        );
+
+        assertNotNull(ex.getMessage());
+    }
+
+    @Test
+    void sentAOrder_nullBody() {
+        ResponseEntity<UUID> responseNullBody =
+                new ResponseEntity<>(null, HttpStatus.OK);
+
+        when(restTemplate.exchange(
+                eq("http://localhost:8080/orders"),
+                eq(HttpMethod.POST),
+                any(HttpEntity.class),
+                any(ParameterizedTypeReference.class)
+        )).thenReturn(responseNullBody);
+
+        OrderDTO dummyOrder = new OrderDTO();
+        IllegalStateException ex = assertThrows(
+                IllegalStateException.class,
+                () -> client.sendAOrder(dummyOrder)
+        );
+
+        assertNotNull(ex.getMessage());
+    }
 }

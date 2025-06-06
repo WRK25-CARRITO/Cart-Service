@@ -1,6 +1,7 @@
 package com.gft.wrk2025carrito.shopping_cart.infrastructure.messages;
 
 import com.gft.wrk2025carrito.shopping_cart.application.dto.OrderDTO;
+import com.gft.wrk2025carrito.shopping_cart.application.dto.OrderDTORecord;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,7 +27,7 @@ class CartProducerTest {
         UUID userId = UUID.randomUUID();
         UUID cartId = UUID.randomUUID();
         String state = "PENDING";
-        OrderDTO orderDTO = new OrderDTO(userId, cartId, state);
+        OrderDTORecord orderDTO = new OrderDTORecord(userId, cartId, state);
 
         cartProducer.sendCartStateChanged(orderDTO);
 

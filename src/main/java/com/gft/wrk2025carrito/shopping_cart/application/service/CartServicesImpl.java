@@ -1,7 +1,6 @@
 package com.gft.wrk2025carrito.shopping_cart.application.service;
 
-import com.gft.wrk2025carrito.shopping_cart.application.dto.CartDTO;
-import com.gft.wrk2025carrito.shopping_cart.application.dto.OrderDTO;
+import com.gft.wrk2025carrito.shopping_cart.application.dto.*;
 import com.gft.wrk2025carrito.shopping_cart.application.helper.CartCalculator;
 import com.gft.wrk2025carrito.shopping_cart.application.service.client.OrderMicroserviceService;
 import com.gft.wrk2025carrito.shopping_cart.domain.model.cart.Cart;
@@ -20,6 +19,7 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.math.BigDecimal;
 import java.util.stream.Collectors;
@@ -206,6 +206,30 @@ public class CartServicesImpl implements CartServices {
         return cartRepository.create(cart);
     }
 
+    @Override
+    @Transactional
+    public UUID sendCartToOrder(UUID id) throws Exception {
+
+        if (id == null) throw new IllegalArgumentException("Cart ID must not be null");
+
+        if (!cartRepository.existsById(id)) throw new IllegalArgumentException("No cart found with ID " + id);
+
+        Cart cart = cartRepository.findById(id);
+
+        if (cart.getState() != CartState.CLOSED) {
+            throw new IllegalArgumentException("Cannot send cart state from " + cart.getState() + " to Orders");
+        }
+
+        Cart calculatedCart = cartCalculator.calculateAndUpdateCart(cart);
+
+        OrderDTO order = createOrderFromCart(calculatedCart);
+
+        UUID generatedUuid = orderMicroserviceService.sendAOrder(order);
+
+        createCart(cart.getUserId());
+
+        return generatedUuid;
+    }
 
     private Cart handlePending(Cart cart) {
 
@@ -245,7 +269,7 @@ public class CartServicesImpl implements CartServices {
 
         cartRepository.save(cartFactory.toEntity(updatedCart));
 
-        cartProducer.sendCartStateChanged(new OrderDTO(updatedCart.getUserId(),updatedCart.getId().id(),updatedCart.getState().toString()));
+        cartProducer.sendCartStateChanged(new OrderDTORecord(updatedCart.getUserId(),updatedCart.getId().id(),updatedCart.getState().toString()));
 
         return updatedCart;
     }
@@ -287,9 +311,47 @@ public class CartServicesImpl implements CartServices {
 
         cartRepository.save(cartFactory.toEntity(updatedCart));
 
-        cartProducer.sendCartStateChanged(new OrderDTO(updatedCart.getUserId(),updatedCart.getId().id(),updatedCart.getState().toString()));
+        cartProducer.sendCartStateChanged(new OrderDTORecord(updatedCart.getUserId(),updatedCart.getId().id(),updatedCart.getState().toString()));
 
         return updatedCart;
+    }
+
+    private OrderDTO createOrderFromCart(Cart cart){
+
+        UUID orderId = cart.getId().id();
+
+        List<OrderOffers> orderOffers = fromPromotionIds(cart.getPromotionIds(), orderId);
+
+        OrderDTO order = OrderDTO.builder()
+                .id(orderId)
+                .userId(cart.getUserId())
+                .creationDate(LocalDateTime.now())
+                .totalPrice(cart.getTotalPrice())
+                .countryTax(cart.getCountryTax().getTax())
+                .paymentMethod(cart.getPaymentMethod().getCharge())
+                .ordersOffers(orderOffers)
+                .orderReturn(false)
+                .build();
+
+        List<OrderLineDTO> orderLines = OrderLineDTO.fromCartDetailList(cart.getCartDetails());
+        order.setOrderLines(orderLines);
+
+        return order;
+    }
+
+    public static List<OrderOffers> fromPromotionIds(List<Long> promotionIds, UUID orderId) {
+        if (promotionIds == null) {
+            return List.of();
+        }
+
+        return promotionIds.stream()
+                .map(promoId -> {
+                    OrderOffers oo = new OrderOffers();
+                    oo.setOrderId(orderId);
+                    oo.setOfferId(promoId);
+                    return oo;
+                })
+                .collect(Collectors.toList());
     }
 
 }
